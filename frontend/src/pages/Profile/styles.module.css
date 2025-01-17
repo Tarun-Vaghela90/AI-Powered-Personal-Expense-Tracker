@@ -1,0 +1,102 @@
+/* styles.module.css */
+
+/* Main container for the page */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f9;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Heading style */
+  .heading {
+    font-size: 3rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Form container for profile information */
+  .form_container {
+    display: flex;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    width: 80%;
+    max-width: 1000px;
+    padding: 20px;
+  }
+  
+  /* Left section - Image styling */
+  .left {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .img {
+    width: 80%;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Right section - Profile details */
+  .right {
+    flex: 2;
+    padding-left: 20px;
+  }
+  
+  .from_heading {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  /* Profile image */
+  .profile_img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+  }
+  
+  /* Input fields styling */
+  .input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #fafafa;
+    transition: 0.3s;
+  }
+  
+  .input:focus {
+    border-color: #4b9cd3;
+    background-color: #fff;
+    outline: none;
+  }
+  
+  /* Button styling */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn:hover {
+    background-color: #ff6b81;
+  }
+  
+  

@@ -1,0 +1,115 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+  }
+  
+  .heading {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .form_container {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    max-width: 1200px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+  }
+  
+  .left {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  
+  .right {
+    width: 55%;
+    padding-left: 20px;
+  }
+  
+  .from_heading {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+  }
+  
+  .input:focus {
+    border-color: #4c8bf5;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4c8bf5;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #357ae8;
+  }
+  
+  .text {
+    text-align: center;
+    font-size: 1rem;
+    margin: 10px 0;
+  }
+  
+  .google_btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #db4437;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .google_btn img {
+    width: 20px;
+    margin-right: 10px;
+  }
+  
+  .google_btn:hover {
+    background-color: #c1351d;
+  }
+  
+  p a {
+    color: #4c8bf5;
+    text-decoration: none;
+  }
+  
+  p a:hover {
+    text-decoration: underline;
+  }
+  
