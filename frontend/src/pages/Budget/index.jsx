@@ -1,14 +1,20 @@
 
 import revenueData  from './revenueData.json'
-
+import { FaPlus } from "react-icons/fa6";
 export default function Budget() {
 
 
 
     return (
       <>
-      <span className='w-16 h-12 p-3   justify-end rounded-md bg-blue-600'>+</span>
-      <hr  className='mb-2 mt-5'/>
+   <div className="flex justify-end mt-5">
+  <button className="w-10 h-10 flex items-center justify-center rounded-md bg-blue-600">
+    <FaPlus />
+  </button>
+</div>
+
+
+      <hr  className='mb-3 mt-2 '/>
       <div  className="grid grid-cols-4   gap-y-5  gap-x-6">
       {  
       revenueData.map((data,index)=>{

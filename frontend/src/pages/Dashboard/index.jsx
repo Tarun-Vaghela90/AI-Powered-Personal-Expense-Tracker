@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import styles from './styles.module.css';
-
+import {FaHome,FaMoneyBillWave,FaCreditCard,FaFileAlt}  from 'react-icons/fa'
 export default function Dashboard() {
   return (
     <div className={styles.dashboardContainer}>
@@ -8,10 +8,10 @@ export default function Dashboard() {
         <h1 className={styles.heading}>Dashboard</h1>
         
         <nav>
-          <Link to="home" className={styles.Link_dash}>Home</Link>
-          <Link to="Budget" className={styles.Link_dash}>Budget</Link>
-          <Link to="expense" className={styles.Link_dash}>Expense</Link>
-          <Link to="reports" className={styles.Link_dash}>Reports</Link>
+          <Link to="home" className={styles.Link_dash}><FaHome/>Home</Link>
+          <Link to="Budget" className={styles.Link_dash}> <FaMoneyBillWave />Budget</Link>
+          <Link to="expense" className={styles.Link_dash}><FaCreditCard/>Expense</Link>
+          <Link to="reports" className={styles.Link_dash}><FaFileAlt/>Reports</Link>
         </nav>
       </div>
       
