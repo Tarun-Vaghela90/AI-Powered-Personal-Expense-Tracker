@@ -1,9 +1,10 @@
+import express from "express";
+import passport from "passport";
+import dotenv from "dotenv";
 
-const router = require("express").Router();
-const passport = require("passport");
-require('dotenv').config();
+dotenv.config();
 
-
+const router = express.Router();
 
 router.get('/login/success', (req, res) => {
     if (req.user) {
@@ -15,13 +16,13 @@ router.get('/login/success', (req, res) => {
     } else {
       res.status(403).json({ success: false, message: "Not authenticated" });
     }
-  });
+});
 
-router.get("/login/failed",(req,res)=>{
+router.get("/login/failed", (req, res) => {
     res.status(401).json({
-        error:true,
-        message:"Login in Failure"
-    })
+        error: true,
+        message: "Login Failure",
+    });
 });
 
 router.get("/google/callback", 
@@ -40,19 +41,16 @@ router.get("/google/callback",
     }
 );
 
-
-
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
-router.get("/google/logout",(req,res)=>{
+router.get("/google/logout", (req, res) => {
     req.logout((err) => {
         if (err) {
           return next(err);  // Handle any errors that occur during logout
         }
          // Redirect or send a response after successful logout
         res.redirect(process.env.CLIENT_URL); 
-      });
-      
+    });
 });
 
-module.exports=router;
+export default router; // Use export default instead of module.exports

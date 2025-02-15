@@ -1,12 +1,11 @@
-const express = require("express");
-const cors = require("cors");
-const passport = require("passport");
-const session = require("express-session");  // Ensure express-session is used
-const authRoutes = require("./routes/auth");
-require('./passport')
+import express from 'express';
+import session from 'express-session';
+import passport from 'passport'
+import authRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
+import cors from 'cors'
 const app = express();
-
-// Use express-session for session management
+import './passport.js'
+// Middleware for sessions
 app.use(
     session({
         secret: "ranger", // Your session secret key
@@ -31,3 +30,4 @@ app.use("/auth", authRoutes);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
+
