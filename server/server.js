@@ -2,6 +2,8 @@ import express from 'express';
 import session from 'express-session';
 import passport from 'passport'
 import authRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
+import userAuth  from './routes/userAuth.js'
+import transcation from './routes/transcationRoute.js'
 import cors from 'cors'
 const app = express();
 import './passport.js'
@@ -27,6 +29,8 @@ app.use(
 );
 
 app.use("/auth", authRoutes);
+app.use("/api/users", userAuth)
+app.use("/api/transcation", transcation)
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
