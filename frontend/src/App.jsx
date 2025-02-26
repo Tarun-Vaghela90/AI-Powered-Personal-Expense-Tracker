@@ -4,7 +4,7 @@ import axios from 'axios';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import DashboardHome from './pages/dashboardhome';
-import Budget from './pages/Budget';
+import Budget from './pages/Category';
 import Expense from './pages/Expense';
 import Reports from './pages/Reports';
 import './App.css';
@@ -13,26 +13,34 @@ import Dashboard from './pages/dashboard'; // Import Dashboard
 
 function App() {
   const [user, setUser] = useState(null);
-  console.log('User:', user);
 
   const getUser = async () => {
     try {
       const url = `${import.meta.env.VITE_REACT_APP_URL}/auth/login/success`;  // Ensure the correct environment variable is used
       const { data } = await axios.get(url, { withCredentials: true });
 
-      // Log the response to check the structure
-      console.log('Response Data:', data);
+      // console.log('Response Data:', data); // Log response to verify data structure
 
-      // Adjust the following line depending on the actual response structure
-      setUser(data.user ? data.user._json : null);
+      // Directly set the user object
+      if (data.success && data.user) {
+        setUser(data.user); // Set user object from the response
+      } else {
+        setUser(null); // Set to null if no user data
+      }
     } catch (err) {
       console.error('Error fetching user data:', err);
+      setUser(null); // In case of error, reset user to null
     }
   };
 
   useEffect(() => {
-    getUser();
+    getUser();  // Fetch user data on initial render
   }, []);
+
+  // Log user state once it's updated
+  useEffect(() => {
+    // console.log('User:', user); // This should log the user object or null
+  }, [user]);
 
   return (
     <div className="App">
@@ -55,12 +63,10 @@ function App() {
         {/* Route for Dashboard, without login condition */}
         <Route path="/dashboard" element={<Dashboard />}>
           {/* Add nested routes for the dashboard here */}
-          
-        <Route path="home" element={<DashboardHome />} />
-        <Route path="Budget" element={<Budget />} />
-        <Route path="expense" element={<Expense />} />
-        <Route path="reports" element={<Reports />} />
-      
+          <Route path="home" element={<DashboardHome />} />
+          <Route path="budget" element={<Budget />} />
+          <Route path="expense" element={<Expense />} />
+          <Route path="reports" element={<Reports />} />
         </Route>
       </Routes>
     </div>

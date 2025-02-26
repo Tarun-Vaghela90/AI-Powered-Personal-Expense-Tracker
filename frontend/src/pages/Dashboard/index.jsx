@@ -9,7 +9,7 @@ export default function Dashboard() {
         
         <nav>
           <Link to="home" className={styles.Link_dash}><FaHome/>Home</Link>
-          <Link to="Budget" className={styles.Link_dash}> <FaMoneyBillWave />Budget</Link>
+          <Link to="Budget" className={styles.Link_dash}> <FaMoneyBillWave />Category</Link>
           <Link to="expense" className={styles.Link_dash}><FaCreditCard/>Expense</Link>
           <Link to="reports" className={styles.Link_dash}><FaFileAlt/>Reports</Link>
         </nav>
@@ -18,7 +18,6 @@ export default function Dashboard() {
       <div className={styles.main_content}>
        
         
-        {/* Define nested routes for dashboard */}
         <Outlet />
       </div>
     </div>

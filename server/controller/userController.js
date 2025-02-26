@@ -1,69 +1,56 @@
-import bcrypt from 'bcrypt';
+// controllers/userController.js
 import User from '../model/User.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
-const getUser = async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).send("Server Error");
-  }
-};
-
-const createUser = async (req, res) => {
+// Register manual user
+export  const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    // Check if the user already exists
     let user = await User.findOne({ email });
+
     if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password before saving
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create a new user instance
-    user = new User({
-      name,
-      email,
-      password: hashedPassword
-    });
-
-    // Save the user to the database
+    user = new User({ name, email, password });
     await user.save();
 
-    res.json(user);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(201).json({ message: 'User registered successfully', token });
   } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).send("Server Error");
+    console.error('Error during registration:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
+// Login manual user
+export const loginUser = async (req, res) => {
   try {
-    // Check if the user exists
-    let user = await User.findOne({ email });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return res.status(400).json({ message: 'User not found' });
     }
 
-    // Compare the entered password with the hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Login successful
-    res.json({ msg: "Login Successful", user: { name: user.name, email: user.email } });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).send("Server Error");
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-export default { getUser, createUser, loginUser };
+// Get current user (for Google or manual login)
+export const getCurrentUser = (req, res) => {
+  res.status(200).json({
+    success: true,
+    user: req.user, // Returning the user data from session or JWT
+  });
+};

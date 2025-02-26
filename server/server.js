@@ -1,12 +1,28 @@
-import express from 'express';
+import express, { json } from 'express';
 import session from 'express-session';
-import passport from 'passport'
-import authRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
-import userAuth  from './routes/userAuth.js'
-import transcation from './routes/transcationRoute.js'
-import cors from 'cors'
+import passport from 'passport';
+import googleRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
+import userAuth from './routes/userAuth.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import cors from 'cors';
+import mongoose from 'mongoose'; // Import mongoose to connect to MongoDB
+import dotenv from 'dotenv'; // Load environment variables (e.g., for DB URI)
+
+dotenv.config(); // This will load variables from a .env file
+
 const app = express();
-import './passport.js'
+import './passport.js';
+app.use(express.json())
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/Ai-powered-expenses-tracker', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('MongoDB connected to Ai-powered-expenses-tracker');
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
+});
+
 // Middleware for sessions
 app.use(
     session({
@@ -28,10 +44,9 @@ app.use(
     })
 );
 
-app.use("/auth", authRoutes);
-app.use("/api/users", userAuth)
-app.use("/api/transcation", transcation)
+app.use("/auth", googleRoutes); // Google authentication routes
+app.use("/api/users", userAuth); // User authentication and CRUD routes
+app.use("/api/expense", expenseRoutes); // Expense-related routes
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
-

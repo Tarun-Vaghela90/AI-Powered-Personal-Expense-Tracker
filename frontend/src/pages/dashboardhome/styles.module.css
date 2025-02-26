@@ -1,6 +1,10 @@
 /* styles.module.css */
 
 /* Main container for the page */
+
+.chart{
+  background-color: red;
+}
 .container {
     display: flex;
     justify-content: center;

@@ -1,0 +1,28 @@
+[
+    {
+      "label": "Marketing",
+      "expense": 4500,
+      "budget": 5000
+    },
+    {
+      "label": "Operations",
+      "expense": 3500,
+      "budget": 4000
+    },
+    {
+      "label": "Development",
+      "expense": 6000,
+      "budget": 8000
+    },
+    {
+      "label": "Research",
+      "expense": 2000,
+      "budget": 3000
+    },
+    {
+      "label": "Miscellaneous",
+      "expense": 1000,
+      "budget": 5000
+    }
+  ]
+  
