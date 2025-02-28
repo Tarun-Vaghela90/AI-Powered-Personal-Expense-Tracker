@@ -6,6 +6,7 @@ import {
   getExpenseById,
   updateExpense,
   deleteExpense,
+  getTotalSumByUser,
 } from '../controller/expenseController.js';
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router.get('/expensesfetch', fetchuser, getUserExpenses);
 router.get('/expense/:id', fetchuser, getExpenseById);
 router.put('/expense/:id', fetchuser, updateExpense);
 router.delete('/expense/:id', fetchuser, deleteExpense);
+router.get('/expenseTotal/:userId', fetchuser, getTotalSumByUser);
+
 
 export default router;

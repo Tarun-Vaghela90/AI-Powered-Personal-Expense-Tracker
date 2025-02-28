@@ -8,7 +8,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import cors from 'cors';
 import mongoose from 'mongoose'; // Import mongoose to connect to MongoDB
 import dotenv from 'dotenv'; // Load environment variables (e.g., for DB URI)
-
+import geminiRoute  from './routes/geminiRoutes.js'
 dotenv.config(); // This will load variables from a .env file
 
 const app = express();
@@ -49,6 +49,7 @@ app.use("/auth", googleRoutes); // Google authentication routes
 app.use("/api/users", userAuth); // User authentication and CRUD routes
 app.use("/api/expenseRoute", expenseRoutes); // Expense-related routes
 app.use("/api/category", categoryRoutes); // Expense-related routes
+app.use("/api/report", geminiRoute); // Expense-related routes
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on port ${port}...`));

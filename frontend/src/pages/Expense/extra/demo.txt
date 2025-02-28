@@ -10,34 +10,33 @@ export default function Expense() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Fetch expenses when the component mounts
-  const fetchExpenses = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      console.log('No auth token found');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:3001/api/expenseRoute/expensesfetch', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'authToken': token,
-        },
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setExpenses(data.expenses); // Update state with fetched expenses
-      } else {
-        console.log('Failed to fetch expenses');
-      }
-    } catch (error) {
-      console.log('Error fetching expenses:', error);
-    }
-  };
   useEffect(() => {
-    
+    const fetchExpenses = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.log('No auth token found');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3001/api/expenseRoute/expensesfetch', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'authToken': token,
+          },
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          setExpenses(data.expenses); // Update state with fetched expenses
+        } else {
+          console.log('Failed to fetch expenses');
+        }
+      } catch (error) {
+        console.log('Error fetching expenses:', error);
+      }
+    };
 
     fetchExpenses();
   }, []); // Empty dependency array ensures this runs once when the component mounts
@@ -133,7 +132,6 @@ export default function Expense() {
           const updatedExpenses = [...expenses];
           updatedExpenses[editingIndex] = data.expense; // Update the edited expense in state
           setExpenses(updatedExpenses);
-          fetchExpenses();
         } else {
           setErrorMessage('Failed to update expense');
         }
@@ -151,7 +149,6 @@ export default function Expense() {
         data = await response.json();
         if (data.success) {
           setExpenses((prev) => [...prev, data.expense]); // Add the new expense to the state
-          fetchExpenses();
         } else {
           setErrorMessage('Failed to create expense');
         }
@@ -206,7 +203,6 @@ const handleDelete = async (index) => {
       // If delete is successful, remove the expense from the state
       const filteredExpenses = expenses.filter((_, i) => i !== index);
       setExpenses(filteredExpenses);
-      fetchExpenses();
     } else {
       setErrorMessage('Failed to delete expense');
     }
@@ -218,11 +214,11 @@ const handleDelete = async (index) => {
 
 
   return (
-    <div className="w-full p-8 text-white min-h-screen">
+    <div className="w-full p-8 bg-gray-900 text-white min-h-screen">
       <div className="flex justify-between items-center mb-4">
         <div>
-          {/* <input type="checkbox" id="selectAll" className="mr-2" /> */}
-          {/* <label htmlFor="selectAll" className="text-xl font-semibold">Select All</label> */}
+          <input type="checkbox" id="selectAll" className="mr-2" />
+          <label htmlFor="selectAll" className="text-xl font-semibold">Select All</label>
         </div>
         <button onClick={handleNewExpense} className="bg-blue-500 text-white px-4 py-2 rounded-lg">
           New Expense
@@ -231,9 +227,11 @@ const handleDelete = async (index) => {
 
       <div className="overflow-x-auto">
         <table className="table-auto font-sans w-full text-center">
-          <thead className="text-xl bg-blue-600 text-white">
+          <thead className="text-2xl bg-blue-600 text-white">
             <tr>
-             
+              <th className="p-4">
+                <input type="checkbox" />
+              </th>
               <th className="p-4">Id</th>
               <th className="p-4">Name</th>
               <th className="p-4">Note</th>
@@ -244,10 +242,12 @@ const handleDelete = async (index) => {
               <th className="p-4">Delete</th>
             </tr>
           </thead>
-          <tbody className="text-large">
+          <tbody className="text-xl">
             {expenses.map((exp, index) => (
               <tr key={exp._id} className="hover:bg-gray-700">
-                
+                <td className="p-4">
+                  <input type="checkbox" />
+                </td>
                 <td className="p-4">{exp._id}</td>
                 <td className="p-4">{exp.name}</td>
                 <td className="p-4">{exp.note}</td>

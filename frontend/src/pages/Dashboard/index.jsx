@@ -47,9 +47,9 @@ export default function Dashboard() {
         {/* Display user info before Home link */}
         {userData ? (
           <div className={styles.userDetails}>
-            <p>Name: {userData.name}</p>
-            <p>Email: {userData.email}</p>
-            <p>ID: {userData._id}</p>
+            <p>Welcome, <mark> {userData.name}  </mark> </p>
+            <p> {userData.email}</p>
+            {/* <p>ID: {userData._id}</p> */}
           </div>
         ) : (
           <p>Loading user data...</p>
