@@ -33,7 +33,7 @@ const expenseSchema = new mongoose.Schema(
       required: true, // Ensuring the expense belongs to a user
     },
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
 // Create and export the Expense model

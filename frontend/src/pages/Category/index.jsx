@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa6';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -6,30 +6,58 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Budget() {
-  // State to manage modal visibility and form input values
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({ label: '', budget: '', expense: 0 });
-  const [data, setData] = useState([
-    { label: 'Rent', budget: 1000, expense: 800 },
-    { label: 'Groceries', budget: 300, expense: 150 },
-    { label: 'Utilities', budget: 200, expense: 180 },
-  ]);
-  const [editingIndex, setEditingIndex] = useState(null); // Track editing category
-  const [errors, setErrors] = useState({}); // Validation errors
+  const [data, setData] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Function to handle opening and closing the modal
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-    setEditingIndex(null); // Reset editing when modal is closed
+  const authToken = localStorage.getItem('authToken');
+
+  // Fetch categories on component mount or after any changes
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/category/allcategories', {
+        headers: { authToken: authToken },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+
+      const result = await response.json();
+      if (Array.isArray(result.categories)) {
+        setData(result.categories);
+      } else {
+        console.error('API did not return an array:', result);
+        setData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setErrorMessage(error.message);
+    }
   };
 
-  // Function to handle form input change
+  useEffect(() => {
+    fetchCategories();
+  }, [authToken]);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+    setEditingIndex(null); // Reset editing index
+    setNewCategory({ label: '', budget: '', expense: 0 }); // Reset form fields
+    setErrors({});
+    setErrorMessage('');
+  };
+
+  // Handle form input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCategory((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Function to validate form inputs
+  // Validate form fields
   const validateForm = () => {
     const newErrors = {};
     if (!newCategory.label) newErrors.label = 'Category name is required';
@@ -37,8 +65,8 @@ export default function Budget() {
     return newErrors;
   };
 
-  // Function to handle form submission
-  const handleFormSubmit = (e) => {
+  // Handle form submit for add/update category
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
@@ -46,53 +74,106 @@ export default function Budget() {
       return;
     }
 
-    if (editingIndex !== null) {
-      // Update existing category
-      const updatedData = [...data];
-      updatedData[editingIndex] = newCategory;
-      setData(updatedData);
-    } else {
-      // Add new category
-      setData((prev) => [
-        ...prev,
-        { label: newCategory.label, budget: parseFloat(newCategory.budget), expense: 0 },
-      ]);
+    try {
+      let response;
+      if (editingIndex !== null) {
+        const categoryId = data[editingIndex]._id;
+        // PUT request to update category
+        response = await fetch(`http://localhost:3001/api/category/category/${categoryId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            authToken: authToken,
+          },
+          body: JSON.stringify({
+            name: newCategory.label,
+            budget: newCategory.budget,
+            expense: newCategory.expense, // Include expense in case it's relevant for update
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update category');
+        }
+
+        // Fetch updated categories after successful update
+        await fetchCategories();
+      } else {
+        // POST request to create new category
+        response = await fetch('http://localhost:3001/api/category/categorycreate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            authToken: authToken,
+          },
+          body: JSON.stringify({
+            name: newCategory.label,
+            budget: newCategory.budget,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create category');
+        }
+
+        // Fetch updated categories after successful creation
+        await fetchCategories();
+      }
+
+      toggleModal(); // Close modal after success
+    } catch (error) {
+      console.error('Error adding/updating category:', error);
+      setErrorMessage(error.message);
     }
-
-    setNewCategory({ label: '', budget: '', expense: 0 }); // Reset the form
-    toggleModal(); // Close the modal
-    setEditingIndex(null); // Reset editing index
-    setErrors({}); // Clear validation errors
   };
 
-  // Function to handle editing a category
+  // Edit category
   const handleEditCategory = (index) => {
-    setEditingIndex(index);
-    setNewCategory(data[index]); // Pre-fill form with selected category data
-    setIsModalOpen(true); // Open the modal for editing
+    setEditingIndex(index); // Set index of category being edited
+    const categoryToEdit = data[index];
+    setNewCategory({
+      label: categoryToEdit.name, // Populate form with existing values
+      budget: categoryToEdit.budget,
+      expense: categoryToEdit.expense || 0,
+    });
+    setIsModalOpen(true); // Open modal
   };
 
-  // Function to handle deleting a category
-  const handleDeleteCategory = (index) => {
-    const updatedData = data.filter((_, i) => i !== index); // Remove the category
-    setData(updatedData);
-    toggleModal(); // Close the modal after deleting
+  const handleDeleteCategory = async () => {
+    if (editingIndex === null) return;
+    const categoryId = data[editingIndex]._id;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/category/category/${categoryId}`, {
+        method: 'DELETE',
+        headers: { authToken: authToken },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete category');
+      }
+
+      // Fetch updated categories after successful deletion
+      await fetchCategories();
+      toggleModal();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setErrorMessage(error.message);
+    }
   };
 
-  // Function to calculate chart data
   const getChartData = (expense, budget) => {
     const remainingBudget = budget - expense;
-    const data = {
+    return {
       labels: ['Expense', 'Remaining'],
       datasets: [
         {
-          data: budget ? [expense, remainingBudget] : [100, 0], // If no budget, show 100% expense
-          backgroundColor: ['#ff4d4d', '#d3d3d3'], // Red for expense, grey for remaining
+          data: budget ? [expense, remainingBudget] : [100, 0],
+          backgroundColor: ['#ff4d4d', '#d3d3d3'],
           borderWidth: 1,
         },
       ],
     };
-    return data;
   };
 
   return (
@@ -105,34 +186,31 @@ export default function Budget() {
 
       <hr className="mb-3 mt-2" />
 
-      {/* Grid for displaying categories */}
       <div className="grid grid-cols-4 gap-y-5 gap-x-6">
-        {data.map((item, index) => {
-          const budget = item.budget || 0; // Get budget, default to 0 if not available
-          const expense = item.expense || 0; // Get expense, default to 0 if not available
+        {Array.isArray(data) && data.map((item, index) => {
+          const budget = item.budget || 0;
+          const expense = item.expense || 0;
           return (
             <div
               key={index}
-              onClick={() => handleEditCategory(index)} // Open the modal on card click
+              onClick={() => handleEditCategory(index)}
               className="w-64 h-32 p-4 rounded-lg shadow-lg bg-[#28282a] hover:shadow-2xl transition duration-300 ease-in-out flex items-center justify-between space-x-4 cursor-pointer"
             >
-              {/* Chart on the Left */}
               <div className="w-20 h-20">
                 <Doughnut
                   data={getChartData(expense, budget)}
                   options={{
-                    cutout: '70%', // To make it a ring
+                    cutout: '70%',
                     plugins: {
-                      tooltip: { enabled: false }, // Disable tooltips
-                      legend: { display: false },  // Hide the legend
+                      tooltip: { enabled: false },
+                      legend: { display: false },
                     },
                   }}
                 />
               </div>
 
-              {/* Category Name and Budget on the Right */}
               <div className="text-white text-sm flex flex-col justify-center">
-                <h2 className="font-semibold mb-2">{item.label}</h2>
+                <h2 className="font-semibold mb-2">{item.name}</h2>
                 <div className="text-xs text-center flex flex-col space-y-1">
                   <span>Expense: {expense}</span>
                   <span>Budget: {budget || 'Not Set'}</span>
@@ -143,55 +221,58 @@ export default function Budget() {
         })}
       </div>
 
-      {/* Modal for adding, editing, or deleting category */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg w-96">
             <h2 className="text-lg font-semibold mb-4">{editingIndex !== null ? 'Edit Category' : 'Add New Category'}</h2>
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium">Category Name</label>
+                <label className="block text-sm font-medium text-gray-700">Category Name</label>
                 <input
                   type="text"
                   name="label"
                   value={newCategory.label}
                   onChange={handleInputChange}
-                  className="mt-1 p-2 block w-full border rounded-md"
-                  required
+                  className="w-full border border-gray-300 p-2 rounded-md"
                 />
-                {errors.label && <p className="text-red-500 text-sm">{errors.label}</p>}
+                {errors.label && <p className="text-red-500 text-sm mt-1">{errors.label}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium">Budget</label>
+                <label className="block text-sm font-medium text-gray-700">Budget</label>
                 <input
                   type="number"
                   name="budget"
                   value={newCategory.budget}
                   onChange={handleInputChange}
-                  className="mt-1 p-2 block w-full border rounded-md"
-                  required
+                  className="w-full border border-gray-300 p-2 rounded-md"
                 />
-                {errors.budget && <p className="text-red-500 text-sm">{errors.budget}</p>}
+                {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
               </div>
-              <div className="flex justify-end space-x-2">
-                <button type="button" onClick={toggleModal} className="px-4 py-2 bg-gray-500 text-white rounded-md">Cancel</button>
-                {editingIndex === null ? (
-                  <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md">Save</button>
-                ) : (
-                  <div className="flex justify-between w-full">
-                    <button
-                      onClick={() => handleDeleteCategory(editingIndex)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={toggleModal}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-md"
-                    >
-                      Edit
-                    </button>
-                  </div>
+
+              {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
+              <div className="flex justify-between">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                >
+                  {editingIndex !== null ? 'Update' : 'Add'}
+                </button>
+                <button
+                  type="button"
+                  className="bg-gray-400 text-white px-4 py-2 rounded-md"
+                  onClick={toggleModal}
+                >
+                  Cancel
+                </button>
+                {editingIndex !== null && (
+                  <button
+                    type="button"
+                    className="bg-red-600 text-white px-4 py-2 rounded-md"
+                    onClick={handleDeleteCategory}
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             </form>

@@ -18,7 +18,7 @@ export const createExpense = async (req, res) => {
       type,
       amount,
       category,
-      user: req.user._id, // The logged-in user ID (from the verified token)
+      user: req.user.id, // The logged-in user ID (from the verified token)
     });
 
     await expense.save();
@@ -36,7 +36,7 @@ export const createExpense = async (req, res) => {
 // Get all expenses for a user
 export const getUserExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user._id }).populate('category');
+    const expenses = await Expense.find({ user: req.user.id }).populate('category');
     res.status(200).json({
       success: true,
       expenses,
@@ -51,7 +51,7 @@ export const getUserExpenses = async (req, res) => {
 export const getExpenseById = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id).populate('category');
-    if (!expense || expense.user.toString() !== req.user._id.toString()) {
+    if (!expense || expense.user.toString() !== req.user.id.toString()) {
       return res.status(404).json({ message: 'Expense not found or unauthorized' });
     }
 
@@ -69,7 +69,7 @@ export const getExpenseById = async (req, res) => {
 export const updateExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    if (!expense || expense.user.toString() !== req.user._id.toString()) {
+    if (!expense || expense.user.toString() !== req.user.id.toString()) {
       return res.status(404).json({ message: 'Expense not found or unauthorized' });
     }
 
@@ -98,7 +98,7 @@ export const updateExpense = async (req, res) => {
 export const deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    if (!expense || expense.user.toString() !== req.user._id.toString()) {
+    if (!expense || expense.user.toString() !== req.user.id.toString()) {
       return res.status(404).json({ message: 'Expense not found or unauthorized' });
     }
 

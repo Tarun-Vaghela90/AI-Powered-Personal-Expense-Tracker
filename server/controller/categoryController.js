@@ -4,16 +4,17 @@ import Category from '../model/categoryModel.js';
 export const createCategory = async (req, res) => {
   try {
     const { name, budget } = req.body;
-
+       console.log(name,budget)
     // Validate required fields
     if (!name || budget === undefined) {
       return res.status(400).json({ message: 'Name and Budget are required fields' });
     }
 
-    // Create the new category
+    // Create the new category with user ID from the token
     const newCategory = new Category({
       name,
-      budget
+      budget,
+      user: req.user.id, // Attach the user ID from token
     });
 
     await newCategory.save();
@@ -26,10 +27,10 @@ export const createCategory = async (req, res) => {
   }
 };
 
-// Get all categories
+// Get all categories for the logged-in user
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find({ user: req.user.id }); // Get categories for the logged-in user
     res.status(200).json({ categories });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching categories', error: err.message });
@@ -40,7 +41,7 @@ export const getAllCategories = async (req, res) => {
 export const getCategoryById = async (req, res) => {
   try {
     const { id } = req.params;
-    const category = await Category.findById(id);
+    const category = await Category.findOne({ _id: id, user: req.user.id }); // Ensure the category belongs to the user
 
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
@@ -63,10 +64,11 @@ export const updateCategory = async (req, res) => {
       return res.status(400).json({ message: 'Name and Budget are required fields' });
     }
 
-    const updatedCategory = await Category.findByIdAndUpdate(id, {
-      name,
-      budget
-    }, { new: true });
+    const updatedCategory = await Category.findOneAndUpdate(
+      { _id: id, user: req.user.id }, // Ensure the category belongs to the user
+      { name, budget },
+      { new: true }
+    );
 
     if (!updatedCategory) {
       return res.status(404).json({ message: 'Category not found' });
@@ -86,7 +88,7 @@ export const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedCategory = await Category.findByIdAndDelete(id);
+    const deletedCategory = await Category.findOneAndDelete({ _id: id, user: req.user.id }); // Ensure the category belongs to the user
 
     if (!deletedCategory) {
       return res.status(404).json({ message: 'Category not found' });

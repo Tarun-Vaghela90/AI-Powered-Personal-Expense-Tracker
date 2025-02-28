@@ -11,8 +11,8 @@ import {
 const router = express.Router();
 
 // Protect these routes with the fetchuser middleware
-router.post('/expense', fetchuser, createExpense);
-router.get('/expenses', fetchuser, getUserExpenses);
+router.post('/expenseCreate', fetchuser, createExpense);
+router.get('/expensesfetch', fetchuser, getUserExpenses);
 router.get('/expense/:id', fetchuser, getExpenseById);
 router.put('/expense/:id', fetchuser, updateExpense);
 router.delete('/expense/:id', fetchuser, deleteExpense);

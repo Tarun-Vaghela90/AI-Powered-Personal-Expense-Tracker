@@ -31,18 +31,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash the password before saving for manual users
-userSchema.pre('save', async function (next) {
-  if (this.password) {
-    this.password = await bcrypt.hash(this.password, 10); // Hash password before saving
-  }
-  next();
-});
-
-// Method to compare password for manual users
-userSchema.methods.comparePassword = function (password) {
-  return bcrypt.compare(password, this.password);
-};
 
 const User = mongoose.model('User', userSchema);
 export default User;

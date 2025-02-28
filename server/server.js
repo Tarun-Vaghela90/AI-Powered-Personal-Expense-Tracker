@@ -4,6 +4,7 @@ import passport from 'passport';
 import googleRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
 import userAuth from './routes/userAuth.js';
 import expenseRoutes from './routes/expenseRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 import cors from 'cors';
 import mongoose from 'mongoose'; // Import mongoose to connect to MongoDB
 import dotenv from 'dotenv'; // Load environment variables (e.g., for DB URI)
@@ -46,7 +47,8 @@ app.use(
 
 app.use("/auth", googleRoutes); // Google authentication routes
 app.use("/api/users", userAuth); // User authentication and CRUD routes
-app.use("/api/expense", expenseRoutes); // Expense-related routes
+app.use("/api/expenseRoute", expenseRoutes); // Expense-related routes
+app.use("/api/category", categoryRoutes); // Expense-related routes
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
