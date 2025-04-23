@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaPlus } from 'react-icons/fa6';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -7,28 +7,28 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Budget() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState({ label: '', budget: '', expense: 0 });
+  const [newCategory, setNewCategory] = useState({ label: '', budget: '' });
   const [data, setData] = useState([]);
+  const [totalExpenses, setTotalExpenses] = useState({});
   const [editingIndex, setEditingIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
 
   const authToken = localStorage.getItem('authToken');
 
-  // Fetch categories on component mount or after any changes
+  // Fetch categories and their associated expenses
   const fetchCategories = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/category/allcategories', {
         headers: { authToken: authToken },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch categories');
-      }
+      if (!response.ok) throw new Error('Failed to fetch categories');
 
       const result = await response.json();
       if (Array.isArray(result.categories)) {
         setData(result.categories);
+        fetchTotalExpenses(result.categories);
       } else {
         console.error('API did not return an array:', result);
         setData([]);
@@ -39,25 +39,59 @@ export default function Budget() {
     }
   };
 
+  // Fetch total expenses for each category
+  const fetchTotalExpenses = async (categories) => {
+    try {
+      const expensesResults = await Promise.all(
+        categories.map(async (category) => {
+          const response = await fetch(
+            `http://localhost:3001/api/expenseRoute/expensesfetch?categoryId=${category._id}`,
+            { headers: { authToken: authToken } }
+          );
+
+          if (!response.ok) throw new Error('Failed to fetch expenses for category');
+
+          const result = await response.json();
+
+          let totalDebitExpense = 0;
+          if (result.success && Array.isArray(result.expenses)) {
+            totalDebitExpense = result.expenses
+              .filter((expense) => expense.type === 'debit')
+              .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+          }
+
+          return { categoryId: category._id, total: totalDebitExpense };
+        })
+      );
+
+      const mappedExpenses = {};
+      expensesResults.forEach((item) => {
+        mappedExpenses[item.categoryId] = item.total;
+      });
+
+      setTotalExpenses(mappedExpenses);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
   }, [authToken]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
-    setEditingIndex(null); // Reset editing index
-    setNewCategory({ label: '', budget: '', expense: 0 }); // Reset form fields
+    setEditingIndex(null);
+    setNewCategory({ label: '', budget: '' });
     setErrors({});
     setErrorMessage('');
   };
 
-  // Handle form input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCategory((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Validate form fields
   const validateForm = () => {
     const newErrors = {};
     if (!newCategory.label) newErrors.label = 'Category name is required';
@@ -65,7 +99,6 @@ export default function Budget() {
     return newErrors;
   };
 
-  // Handle form submit for add/update category
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateForm();
@@ -76,71 +109,90 @@ export default function Budget() {
 
     try {
       let response;
+      const payload = {
+        name: newCategory.label,
+        budget: newCategory.budget,
+      };
+
       if (editingIndex !== null) {
         const categoryId = data[editingIndex]._id;
-        // PUT request to update category
         response = await fetch(`http://localhost:3001/api/category/category/${categoryId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             authToken: authToken,
           },
-          body: JSON.stringify({
-            name: newCategory.label,
-            budget: newCategory.budget,
-            expense: newCategory.expense, // Include expense in case it's relevant for update
-          }),
+          body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to update category');
-        }
-
-        // Fetch updated categories after successful update
-        await fetchCategories();
+        if (!response.ok) throw new Error('Failed to update category');
       } else {
-        // POST request to create new category
         response = await fetch('http://localhost:3001/api/category/categorycreate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             authToken: authToken,
           },
-          body: JSON.stringify({
-            name: newCategory.label,
-            budget: newCategory.budget,
-          }),
+          body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to create category');
-        }
-
-        // Fetch updated categories after successful creation
-        await fetchCategories();
+        if (!response.ok) throw new Error('Failed to create category');
       }
 
-      toggleModal(); // Close modal after success
+      await fetchCategories();
+      toggleModal();
     } catch (error) {
       console.error('Error adding/updating category:', error);
       setErrorMessage(error.message);
     }
   };
 
-  // Edit category
   const handleEditCategory = (index) => {
-    setEditingIndex(index); // Set index of category being edited
+    setEditingIndex(index);
     const categoryToEdit = data[index];
     setNewCategory({
-      label: categoryToEdit.name, // Populate form with existing values
+      label: categoryToEdit.name,
       budget: categoryToEdit.budget,
-      expense: categoryToEdit.expense || 0,
     });
-    setIsModalOpen(true); // Open modal
+    setIsModalOpen(true);
   };
 
   const handleDeleteCategory = async () => {
     if (editingIndex === null) return;
+    const confirmDelete = await new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50';
+  
+      modal.innerHTML = `
+        <div class="bg-gray-700 p-8 rounded-lg w-96 text-white">
+          <h2 class="text-2xl mb-4">Confirm Delete</h2>
+          <p class="mb-4">Are you sure you want to delete this category?</p>
+          <div class="flex justify-end space-x-4">
+            <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+            <button id="confirmButton" class="bg-red-500 text-white px-4 py-2 rounded-lg">Delete</button>
+          </div>
+        </div>
+      `;
+  
+      document.body.appendChild(modal);
+  
+      const cleanup = () => {
+        document.body.removeChild(modal);
+      };
+  
+      modal.querySelector('#cancelButton').addEventListener('click', () => {
+        resolve(false);
+        cleanup();
+      });
+  
+      modal.querySelector('#confirmButton').addEventListener('click', () => {
+        resolve(true);
+        cleanup();
+      });
+    });
+    if (!confirmDelete) {
+      return; // Exit the function if the user cancels
+    }
     const categoryId = data[editingIndex]._id;
 
     try {
@@ -149,13 +201,11 @@ export default function Budget() {
         headers: { authToken: authToken },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete category');
-      }
+      if (!response.ok) throw new Error('Failed to delete category');
 
-      // Fetch updated categories after successful deletion
       await fetchCategories();
       toggleModal();
+      setEditingIndex(null); // Reset editing index after deletion
     } catch (error) {
       console.error('Error deleting category:', error);
       setErrorMessage(error.message);
@@ -179,22 +229,22 @@ export default function Budget() {
   return (
     <>
       <div className="flex justify-end mt-5">
-        <button onClick={toggleModal} className="w-10 h-10 flex items-center justify-center rounded-md bg-blue-600">
+        <button onClick={toggleModal} className="w-10 h-10 flex items-center justify-center rounded-md bg-blue-600 text-white">
           <FaPlus />
         </button>
       </div>
 
       <hr className="mb-3 mt-2" />
 
-      <div className="grid grid-cols-4 gap-y-5 gap-x-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {Array.isArray(data) && data.map((item, index) => {
           const budget = item.budget || 0;
-          const expense = item.expense || 0;
+          const expense = totalExpenses[item._id] || 0;
           return (
             <div
-              key={index}
+              key={item._id} // Use item._id as key, assuming it's unique
               onClick={() => handleEditCategory(index)}
-              className="w-64 h-32 p-4 rounded-lg shadow-lg bg-[#28282a] hover:shadow-2xl transition duration-300 ease-in-out flex items-center justify-between space-x-4 cursor-pointer"
+              className="p-4 rounded-lg shadow-lg bg-[#28282a] hover:shadow-2xl transition duration-300 ease-in-out flex items-center justify-between space-x-4 cursor-pointer"
             >
               <div className="w-20 h-20">
                 <Doughnut
@@ -211,9 +261,9 @@ export default function Budget() {
 
               <div className="text-white text-sm flex flex-col justify-center">
                 <h2 className="font-semibold mb-2">{item.name}</h2>
-                <div className="text-xs text-center flex flex-col space-y-1">
-                  <span>Expense: {expense}</span>
-                  <span>Budget: {budget || 'Not Set'}</span>
+                <div className="text-xs flex flex-col space-y-1">
+                  <span>Expense: ₹{expense}</span>
+                  <span>Budget: ₹{budget || 'Not Set'}</span>
                 </div>
               </div>
             </div>
@@ -233,10 +283,11 @@ export default function Budget() {
                   name="label"
                   value={newCategory.label}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 p-2 rounded-md"
+                  className="w-full border border-gray-300 rounded-md p-2"
                 />
                 {errors.label && <p className="text-red-500 text-sm mt-1">{errors.label}</p>}
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">Budget</label>
                 <input
@@ -244,34 +295,27 @@ export default function Budget() {
                   name="budget"
                   value={newCategory.budget}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 p-2 rounded-md"
+                  className="w-full border border-gray-300 rounded-md p-2"
                 />
                 {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
               </div>
 
               {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
 
-              <div className="flex justify-between">
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md"
-                >
-                  {editingIndex !== null ? 'Update' : 'Add'}
-                </button>
-                <button
-                  type="button"
-                  className="bg-gray-400 text-white px-4 py-2 rounded-md"
-                  onClick={toggleModal}
-                >
+              <div className="flex justify-end space-x-4 mt-4">
+                <button type="button" onClick={toggleModal} className="px-4 py-2 bg-gray-500 text-white rounded-md">
                   Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md">
+                  Save
                 </button>
                 {editingIndex !== null && (
                   <button
                     type="button"
-                    className="bg-red-600 text-white px-4 py-2 rounded-md"
                     onClick={handleDeleteCategory}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md"
                   >
-                    Delete
+                    <FaTrash />
                   </button>
                 )}
               </div>

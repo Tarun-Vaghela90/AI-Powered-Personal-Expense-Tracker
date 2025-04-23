@@ -11,7 +11,6 @@ export const fetchuser = (req, res, next) => {
 
   try {
     // Log the JWT secret to the console when verifying
-    console.log('JWT Secret used for verification:', JWT_SECRET);
 
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);

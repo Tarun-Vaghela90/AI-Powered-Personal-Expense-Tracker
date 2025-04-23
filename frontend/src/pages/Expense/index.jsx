@@ -26,7 +26,7 @@ export default function Expense() {
         },
       });
       const data = await response.json();
-
+      console.log(data)
       if (data.success) {
         setExpenses(data.expenses); // Update state with fetched expenses
       } else {
@@ -190,7 +190,40 @@ export default function Expense() {
 const handleDelete = async (index) => {
   const expenseId = expenses[index]._id; // Get the ID of the expense to be deleted
   const token = localStorage.getItem('authToken');
+  const confirmDelete = await new Promise((resolve) => {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50';
 
+    modal.innerHTML = `
+      <div class="bg-gray-700 p-8 rounded-lg w-96 text-white">
+        <h2 class="text-2xl mb-4">Confirm Delete</h2>
+        <p class="mb-4">Are you sure you want to delete this expense?</p>
+        <div class="flex justify-end space-x-4">
+          <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Cancel</button>
+          <button id="confirmButton" class="bg-red-500 text-white px-4 py-2 rounded-lg">Delete</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const cleanup = () => {
+      document.body.removeChild(modal);
+    };
+
+    modal.querySelector('#cancelButton').addEventListener('click', () => {
+      resolve(false);
+      cleanup();
+    });
+
+    modal.querySelector('#confirmButton').addEventListener('click', () => {
+      resolve(true);
+      cleanup();
+    });
+  });
+  if (!confirmDelete) {
+    return; // Exit the function if the user cancels
+  }
   try {
     // Send DELETE request to the server to remove the expense
     const response = await fetch(`http://localhost:3001/api/expenseRoute/expense/${expenseId}`, {

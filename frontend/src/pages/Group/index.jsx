@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 export default function Group() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isexpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -237,10 +238,16 @@ export default function Group() {
         </ul>
       </div>
 {/* Center Section */}
-<div className="border-r border-gray-700 p-6 overflow-y-auto bg-gray-900 rounded-lg shadow-lg">
-  <h2 className="text-2xl font-semibold mb-6 text-center text-white border-b border-gray-600 pb-3">
-    Group Expenses
-  </h2>
+<div className="border-r border-gray-700 p-6 overflow-y-auto  bg-gray-900 rounded-lg shadow-lg">
+  <div className="flex justify-between items-center mb-6 border-b border-gray-600 pb-3">
+    <h2 className="text-2xl font-semibold text-white">Group Expenses</h2>
+    <button
+      className="h-10 w-10 rounded-full bg-blue-600 text-white text-xl shadow hover:bg-blue-700"
+      onClick={() => setIsExpenseModalOpen(true)}
+    >
+      +
+    </button>
+  </div>
   {groupExpenses.length > 0 ? (
     <ul className="space-y-4">
       {groupExpenses.map((expense, index) => (
@@ -306,6 +313,55 @@ export default function Group() {
               </button>
               <button
                 onClick={handleCreateGroup}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isexpenseModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-white text-black p-6 rounded w-80">
+            <h2 className="text-lg font-semibold mb-4">Group Expense</h2>
+            <input
+              type="text"
+              placeholder="Name"
+              // value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-400 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Note"
+              // value={groupName}
+              // onChange={(e) => setGroupName(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-400 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Type 'credit' or 'debit'"
+              // value={groupName}
+              // onChange={(e) => setGroupName(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-400 rounded"
+            />
+              <input
+              type="text"
+              placeholder="Amount"
+              // value={groupName}
+              // onChange={(e) => setGroupName(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-400 rounded"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setIsExpenseModalOpen(false)}
+                className="px-4 py-2 bg-gray-400 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                // onClick={handleCreateGroup}
                 className="px-4 py-2 bg-blue-600 text-white rounded"
               >
                 Create

@@ -51,7 +51,7 @@ router.post('/geminireport', fetchuser, async (req, res) => {
           parts: [
             {
               text:
-                'You are a master of finance, an expert who will provide suggestions, analysis, show hidden patterns, recommend budgets, categorization, and expense predictions,YOU WILL NOT ASK ANY QUESTION YOU JUST PROVIDE INFO.Your responsed should be in react jsx html tags only with inline css included to style. Here are the expense details:\n' +
+                'You are a master of finance, an expert that will provide suggestions, analysis, show hidden patterns, recommend budgets, categorization, and expense predictions,YOU WILL NOT ASK ANY QUESTION YOU JUST PROVIDE INFO.Your responsed should be in react jsx html tags only with inline css included to style. Here are the expense details:\n' +
                 expenseText,
             },
           ],
