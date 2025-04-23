@@ -1,48 +1,63 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await fetch(`${import.meta.env.VITE_REACT_APP_URL}/api/users/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    // Basic email and password validation
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
 
-    // Check if the response has content before parsing
-    if (response.ok) {
-      const responseData = await response.json().catch(() => {
-        // Handle if the response is not in JSON format or empty
-        console.error('Response is not a valid JSON');
-        return null;
+    if (password.length < 3) {
+      toast.error("Password must be at least 3 characters long.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_URL}/api/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (responseData) {
-        // Do something with valid JSON data
-        console.log('Login successful:', responseData);
-        navigate("/dashboard/home")
-        localStorage.setItem("authToken",responseData.authToken)
-      } else {
-        // Handle empty or invalid JSON response
-        console.log('Received empty or invalid JSON response.');
-      }
-    } else {
-      console.error('Failed to log in. Server responded with:', response.status);
-    }
-  } catch (error) {
-    console.error('Error during login:', error);
-  }
-};
+      if (response.ok) {
+        const responseData = await response.json().catch(() => {
+          toast.error('Response is not a valid JSON');
+          return null;
+        });
 
+        if (responseData) {
+          // Successful login
+          toast.success("Login successful!");
+          navigate("/dashboard/home");
+          localStorage.setItem("authToken", responseData.authToken);
+        } else {
+          toast.error("Received empty or invalid JSON response.");
+        }
+      } else {
+        // Handle login failure
+        toast.error("Failed to log in. Check your credentials and try again.");
+      }
+    } catch (error) {
+      toast.error(`Error during login: ${error.message}`);
+    }
+  };
 
   const googleAuth = () => {
     window.open(
@@ -53,6 +68,7 @@ export default function Login() {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
+      <ToastContainer />
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">Log In</h1>
         <form onSubmit={handleSubmit}>

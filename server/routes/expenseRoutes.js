@@ -7,6 +7,7 @@ import {
   updateExpense,
   deleteExpense,
   getTotalSumByUser,
+  getGroupExpenses // 👈 Import new controller function
 } from '../controller/expenseController.js';
 
 const router = express.Router();
@@ -19,5 +20,7 @@ router.put('/expense/:id', fetchuser, updateExpense);
 router.delete('/expense/:id', fetchuser, deleteExpense);
 router.get('/expenseTotal/:userId', fetchuser, getTotalSumByUser);
 
+// ✅ New Route: Fetch group expenses
+router.get('/groupExpenses/:groupId', fetchuser, getGroupExpenses);
 
 export default router;

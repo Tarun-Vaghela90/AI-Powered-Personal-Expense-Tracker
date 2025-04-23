@@ -25,6 +25,7 @@ export default function DashboardHome() {
 
         if (!userResponse.ok) throw new Error('Failed to fetch user data');
         const userData = await userResponse.json();
+        console.log(userData)
         setUserData(userData);
 
         // Fetch total credit and debit sum
@@ -41,6 +42,7 @@ export default function DashboardHome() {
 
         if (!totalResponse.ok) throw new Error('Failed to fetch total sum');
         const totalData = await totalResponse.json();
+        console.log(totalData)
         setTotalSum(totalData);
 
         // Fetch expense data
@@ -62,14 +64,14 @@ export default function DashboardHome() {
 
     fetchData();
   }, []);
-
   if (error) {
     return <div>Error: {error}</div>;
   }
-
-  if (!userData || totalSum.totalCredit === 0 || totalSum.totalDebit === 0) {
+  
+  if (!userData || expenseData.length === 0) {
     return <div>Loading...</div>;
   }
+  
 
   // Function to group expenses by month
   const groupExpensesByMonth = (expenses) => {
@@ -106,7 +108,7 @@ export default function DashboardHome() {
           <h2 className="text-lg font-semibold p-2 text-center text-white">Income</h2>
           <hr className="border-gray-300" />
           <h1 className="text-3xl font-bold p-3 text-center text-green-600">
-            ${totalSum.totalCredit}
+            {totalSum.totalCredit}
           </h1>
         </div>
 
@@ -115,7 +117,7 @@ export default function DashboardHome() {
           <h2 className="text-lg font-semibold p-2 text-center text-white">Expense</h2>
           <hr className="border-gray-300" />
           <h1 className="text-3xl font-bold p-3 text-center text-red-600">
-            ${totalSum.totalDebit}
+            {totalSum.totalDebit}
           </h1>
         </div>
 
@@ -124,7 +126,7 @@ export default function DashboardHome() {
           <h2 className="text-lg font-semibold p-2 text-center text-white">Balance</h2>
           <hr className="border-gray-300" />
           <h1 className="text-3xl font-bold p-3 text-center text-blue-600">
-            ${totalSum.totalCredit - totalSum.totalDebit}
+            {totalSum.totalCredit - totalSum.totalDebit}
           </h1>
         </div>
       </div>

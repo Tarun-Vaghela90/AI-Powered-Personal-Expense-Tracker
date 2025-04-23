@@ -1,27 +1,41 @@
 import Expense from '../model/ExpenseModel.js';
 import Category from '../model/categoryModel.js';
-import mongoose from 'mongoose'; 
-// Create a new expense
+import Group from '../model/groupModel.js';
+import mongoose from 'mongoose';
+
+// ✅ CREATE EXPENSE (Personal or Group)
 export const createExpense = async (req, res) => {
   try {
-    const { name, note, type, amount, category } = req.body;
+    const { name, note, type, amount, category, group } = req.body;
 
-    // Ensure required fields are provided
     if (!name || !type || !amount || !category) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
-    // Create new expense
+    if (group) {
+      const groupDoc = await Group.findById(group);
+      if (!groupDoc) {
+        return res.status(404).json({ message: 'Group not found' });
+      }
+
+      const isMember = groupDoc.members.some(member => member.toString() === req.user.id);
+      if (!isMember) {
+        return res.status(403).json({ message: 'You are not a member of this group' });
+      }
+    }
+
     const expense = new Expense({
       name,
       note,
       type,
       amount,
       category,
-      user: req.user.id, // The logged-in user ID (from the verified token)
+      user: req.user.id,
+      group: group || null
     });
 
     await expense.save();
+
     res.status(201).json({
       success: true,
       message: 'Expense created successfully',
@@ -33,10 +47,14 @@ export const createExpense = async (req, res) => {
   }
 };
 
-// Get all expenses for a user
+// ✅ GET ALL PERSONAL EXPENSES
 export const getUserExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user.id }).populate('category');
+    const expenses = await Expense.find({
+      user: req.user.id,
+      group: null
+    }).populate('category');
+
     res.status(200).json({
       success: true,
       expenses,
@@ -47,12 +65,49 @@ export const getUserExpenses = async (req, res) => {
   }
 };
 
-// Get a specific expense by ID
+// ✅ GET GROUP EXPENSES
+export const getGroupExpenses = async (req, res) => {
+  try {
+    const group = await Group.findById(req.params.groupId);
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    const isMember = group.members.some(member => member.toString() === req.user.id);
+    if (!isMember) {
+      return res.status(403).json({ message: 'You are not a member of this group' });
+    }
+
+    const expenses = await Expense.find({ group: req.params.groupId })
+    .populate('category')
+    .populate('user', 'name'); // populate 'user' and only include the 'name' field
+  
+
+    res.status(200).json({
+      success: true,
+      expenses,
+    });
+  } catch (error) {
+    console.error('Error fetching group expenses:', error);
+    res.status(500).json({ message: 'Server error while fetching group expenses' });
+  }
+};
+
+// ✅ GET EXPENSE BY ID
 export const getExpenseById = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id).populate('category');
-    if (!expense || expense.user.toString() !== req.user.id.toString()) {
-      return res.status(404).json({ message: 'Expense not found or unauthorized' });
+
+    if (!expense) {
+      return res.status(404).json({ message: 'Expense not found' });
+    }
+
+    if (
+      expense.user.toString() !== req.user.id &&
+      (!expense.group || !(await Group.findOne({ _id: expense.group, members: req.user.id })))
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to view this expense' });
     }
 
     res.status(200).json({
@@ -65,12 +120,20 @@ export const getExpenseById = async (req, res) => {
   }
 };
 
-// Update an existing expense
+// ✅ UPDATE EXPENSE
 export const updateExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    if (!expense || expense.user.toString() !== req.user.id.toString()) {
-      return res.status(404).json({ message: 'Expense not found or unauthorized' });
+
+    if (!expense) {
+      return res.status(404).json({ message: 'Expense not found' });
+    }
+
+    if (
+      expense.user.toString() !== req.user.id &&
+      (!expense.group || !(await Group.findOne({ _id: expense.group, members: req.user.id })))
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to update this expense' });
     }
 
     const { name, note, type, amount, category } = req.body;
@@ -94,15 +157,22 @@ export const updateExpense = async (req, res) => {
   }
 };
 
-// Delete an expense
+// ✅ DELETE EXPENSE
 export const deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findById(req.params.id);
-    if (!expense || expense.user.toString() !== req.user.id.toString()) {
-      return res.status(404).json({ message: 'Expense not found or unauthorized' });
+
+    if (!expense) {
+      return res.status(404).json({ message: 'Expense not found' });
     }
 
-    // Instead of using expense.remove(), use deleteOne
+    if (
+      expense.user.toString() !== req.user.id &&
+      (!expense.group || !(await Group.findOne({ _id: expense.group, members: req.user.id })))
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to delete this expense' });
+    }
+
     await Expense.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
@@ -115,33 +185,35 @@ export const deleteExpense = async (req, res) => {
   }
 };
 
+// ✅ GET TOTAL SUM OF PERSONAL EXPENSES (Credit & Debit)
 export const getTotalSumByUser = async (req, res) => {
   try {
-    const userId = req.params.userId; // Get the user ID from the request parameters
+    const userId = req.params.userId;
 
-    // Aggregation pipeline to sum credits and debits separately for a specific user
     const totalSum = await Expense.aggregate([
       {
-        $match: { user: new mongoose.Types.ObjectId(userId) }, // Fix here: Use 'new mongoose.Types.ObjectId'
+        $match: {
+          user: new mongoose.Types.ObjectId(userId),
+          group: null,
+        },
       },
       {
         $group: {
-          _id: null, // No grouping by specific fields, we're just summing everything
+          _id: null,
           totalCredit: {
             $sum: {
-              $cond: [{ $eq: ['$type', 'credit'] }, '$amount', 0], // Sum only credits
+              $cond: [{ $eq: ['$type', 'credit'] }, '$amount', 0],
             },
           },
           totalDebit: {
             $sum: {
-              $cond: [{ $eq: ['$type', 'debit'] }, '$amount', 0], // Sum only debits
+              $cond: [{ $eq: ['$type', 'debit'] }, '$amount', 0],
             },
           },
         },
       },
     ]);
 
-    // If no result, return 0 for both totals
     if (totalSum.length === 0) {
       return res.status(200).json({
         totalCredit: 0,
@@ -149,7 +221,6 @@ export const getTotalSumByUser = async (req, res) => {
       });
     }
 
-    // Respond with the total credit and debit sums for the user
     res.status(200).json({
       totalCredit: totalSum[0].totalCredit,
       totalDebit: totalSum[0].totalDebit,
@@ -157,5 +228,44 @@ export const getTotalSumByUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ✅ GET TOTAL SUM OF GROUP EXPENSES
+export const getTotalSumByGroup = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    const isMember = group.members.some(member => member.toString() === req.user.id);
+    if (!isMember) {
+      return res.status(403).json({ message: 'You are not a member of this group' });
+    }
+
+    const totalSum = await Expense.aggregate([
+      {
+        $match: {
+          group: new mongoose.Types.ObjectId(groupId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      totalSum: totalSum[0]?.totalAmount || 0,
+    });
+  } catch (error) {
+    console.error('Error calculating group expenses total sum:', error);
+    res.status(500).json({ message: 'Server error while calculating group total' });
   }
 };

@@ -234,7 +234,7 @@ const handleDelete = async (index) => {
           <thead className="text-xl bg-blue-600 text-white">
             <tr>
              
-              <th className="p-4">Id</th>
+              <th className="p-4 ">Id</th>
               <th className="p-4">Name</th>
               <th className="p-4">Note</th>
               <th className="p-4">Type</th>
@@ -287,7 +287,7 @@ const handleDelete = async (index) => {
                 placeholder="Id"
                 value={expense.id}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-lg bg-gray-600 text-white"
+                className="w-full hidden p-2 rounded-lg bg-gray-600 text-white"
                 disabled
               />
               <input

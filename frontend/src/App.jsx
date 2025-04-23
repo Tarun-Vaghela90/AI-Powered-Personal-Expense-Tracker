@@ -10,6 +10,8 @@ import Reports from './pages/Reports';
 import './App.css';
 import Profile from './pages/profile';
 import Dashboard from './pages/dashboard'; // Import Dashboard
+import Group from './pages/Group';
+// import JoinGroupPage from './pages/Group/JoinGroupPage'; // Import JoinGroupPage
 
 function App() {
   const [user, setUser] = useState(null);
@@ -66,7 +68,10 @@ function App() {
           <Route path="home" element={<DashboardHome />} />
           <Route path="budget" element={<Budget />} />
           <Route path="expense" element={<Expense />} />
+          <Route path="group" element={<Group />} />
           <Route path="reports" element={<Reports />} />
+          {/* <Route path="joingroup/:groupId" element={<JoinGroupPage />} /> */}
+
         </Route>
       </Routes>
     </div>

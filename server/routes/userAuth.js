@@ -52,6 +52,43 @@ router.post('/register', [
   }
 });
 
+//   user update route
+router.post('/update/:id', [
+  body('password', 'Password must be at least 3 characters long').isLength({ min: 3 }),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const userId = req.params.id;
+    const { password } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update only the password
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some error occurred");
+  }
+});
+
+
+
+
 // Route 2: Authenticate User using: POST "/api/auth/login".
 router.post('/login', [
   body('email', 'Enter a valid email').isEmail(),

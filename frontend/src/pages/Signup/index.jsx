@@ -20,20 +20,29 @@ export default function Signup() {
                 },
                 body: JSON.stringify({ name, email, password }),
             });
-
+    
             const data = await response.json();
-            if (response.status === 400) {
-                setError(data.errors[0].msg); // Display first error message if validation fails
-            } else if (response.status === 200) {
-                localStorage.setItem("authToken", data.authToken); // Save auth token
-                navigate("/dashboard/home"); // Redirect to homepage
+            console.log("Signup response:", data);
+    
+            if (!response.ok) {
+                // Safe fallback error message
+                const errorMsg =
+                    data?.errors?.[0]?.msg || // validation array
+                    data?.message || // single message
+                    "Signup failed. Please check your input.";
+                setError(errorMsg);
+                return;
             }
+    
+            localStorage.setItem("authToken", data.authToken);
+            navigate("/dashboard/home");
+    
         } catch (error) {
             console.error("Error:", error);
             setError("Something went wrong. Please try again.");
         }
     };
-
+    
     const googleAuth = () => {
         window.open(`${import.meta.env.VITE_REACT_APP_URL}/auth/google/callback`, "_self");
     };

@@ -47,7 +47,7 @@
 /* Main content styles */
 .main_content {
   flex-grow: 1;
-  padding: 20px;
+  padding: 8px;
   background-color: #0a0a0a;
   overflow-y: auto; /* Allow scrolling if content overflows */
 }

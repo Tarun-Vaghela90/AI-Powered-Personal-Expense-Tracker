@@ -36,15 +36,15 @@ export default function Reports() {
   }, []);
 
   if (loading) {
-    return <p>Loading...</p>; // Show loading state
+    return <p className="text-white">Loading...</p>; // Show loading state
   }
 
   if (error) {
-    return <p>{error}</p>; // Show error message if any
+    return <p className="text-white">{error}</p>; // Show error message if any
   }
 
   if (!reportData) {
-    return <p>No data available</p>; // Show this if no report data is available
+    return <p className="text-white">No data available</p>; // Show this if no report data is available
   }
 
   return (

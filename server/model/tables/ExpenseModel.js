@@ -29,13 +29,17 @@ const expenseSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Linking to the User model
-      required: true, // Ensuring the expense belongs to a user
+      ref: 'User',
+      required: true,
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group',
+      default: null, // If null, it's a personal expense
+    }
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true }
 );
 
-// Create and export the Expense model
 const Expense = mongoose.model('Expense', expenseSchema);
 export default Expense;
