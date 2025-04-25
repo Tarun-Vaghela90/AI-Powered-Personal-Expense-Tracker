@@ -3,15 +3,17 @@ import Category from '../model/categoryModel.js';
 import Group from '../model/groupModel.js';
 import mongoose from 'mongoose';
 
+
 // ✅ CREATE EXPENSE (Personal or Group)
 export const createExpense = async (req, res) => {
   try {
     const { name, note, type, amount, category, group } = req.body;
 
-    if (!name || !type || !amount || !category) {
+    if (!name || !type || !amount) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
+    // If it's a group expense, verify group and membership
     if (group) {
       const groupDoc = await Group.findById(group);
       if (!groupDoc) {
@@ -29,9 +31,9 @@ export const createExpense = async (req, res) => {
       note,
       type,
       amount,
-      category,
+      category: category || null,
       user: req.user.id,
-      group: group || null
+      group: group || null,
     });
 
     await expense.save();
@@ -47,7 +49,47 @@ export const createExpense = async (req, res) => {
   }
 };
 
-// ✅ GET ALL PERSONAL EXPENSES
+// ✅ UPDATE EXPENSE
+export const updateExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) {
+      return res.status(404).json({ message: 'Expense not found' });
+    }
+
+    // Check permission for personal or group expense
+    if (
+      expense.user.toString() !== req.user.id &&
+      (!expense.group || !(await Group.findOne({ _id: expense.group, members: req.user.id })))
+    ) {
+      return res.status(403).json({ message: 'Unauthorized to update this expense' });
+    }
+
+    const { name, note, type, amount, category } = req.body;
+
+    // Update fields only if provided
+    if (name !== undefined) expense.name = name;
+    if (note !== undefined) expense.note = note;
+    if (type !== undefined) expense.type = type;
+    if (amount !== undefined) expense.amount = amount;
+    if (category !== undefined) expense.category = category;
+
+    await expense.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Expense updated successfully',
+      expense,
+    });
+  } catch (error) {
+    console.error('Error updating expense:', error);
+    res.status(500).json({ message: 'Server error while updating expense' });
+  }
+};
+
+// ✅ GET
+//  ALL PERSONAL EXPENSES
 export const getUserExpenses = async (req, res) => {
   try {
     const expenses = await Expense.find({
@@ -94,6 +136,7 @@ export const getGroupExpenses = async (req, res) => {
   }
 };
 
+
 // ✅ GET EXPENSE BY ID
 export const getExpenseById = async (req, res) => {
   try {
@@ -121,41 +164,6 @@ export const getExpenseById = async (req, res) => {
 };
 
 // ✅ UPDATE EXPENSE
-export const updateExpense = async (req, res) => {
-  try {
-    const expense = await Expense.findById(req.params.id);
-
-    if (!expense) {
-      return res.status(404).json({ message: 'Expense not found' });
-    }
-
-    if (
-      expense.user.toString() !== req.user.id &&
-      (!expense.group || !(await Group.findOne({ _id: expense.group, members: req.user.id })))
-    ) {
-      return res.status(403).json({ message: 'Unauthorized to update this expense' });
-    }
-
-    const { name, note, type, amount, category } = req.body;
-
-    expense.name = name || expense.name;
-    expense.note = note || expense.note;
-    expense.type = type || expense.type;
-    expense.amount = amount || expense.amount;
-    expense.category = category || expense.category;
-
-    await expense.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Expense updated successfully',
-      expense,
-    });
-  } catch (error) {
-    console.error('Error updating expense:', error);
-    res.status(500).json({ message: 'Server error while updating expense' });
-  }
-};
 
 // ✅ DELETE EXPENSE
 export const deleteExpense = async (req, res) => {

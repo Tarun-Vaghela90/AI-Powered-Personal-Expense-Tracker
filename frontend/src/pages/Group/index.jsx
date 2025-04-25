@@ -9,6 +9,58 @@ export default function Group() {
   const [groupDetails, setGroupDetails] = useState(null);
   const [joinCode, setJoinCode] = useState('');
   const [groupExpenses, setGroupExpenses] = useState([]);  // New state for group expenses
+  const [name, setName] = useState('');
+const [note, setNote] = useState('');
+const [type, setType] = useState('');
+const [amount, setAmount] = useState('');
+const [group, setGroup] = useState('');
+
+
+
+
+const handleAddExpense = async () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    alert("Please login to continue.");
+    return;
+  }
+
+  const newExpense = {
+    name,
+    note,
+    type,
+    amount: parseFloat(amount),
+    group: selectedGroupId, // assuming this is the selected group
+  };
+
+  try {
+    const response = await fetch("http://localhost:3001/api/expenseRoute/expenseCreate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authToken: token, // sending token in header
+      },
+      body: JSON.stringify(newExpense),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Expense added successfully!");
+      setIsExpenseModalOpen(false);
+      fetchGroupExpenses(selectedGroupId);
+      
+      // Reset fields if needed
+    } else {
+      alert(data.error || "Failed to add expense.");
+    }
+  } catch (error) {
+    console.error("Error adding expense:", error);
+    alert("Something went wrong!");
+  }
+};
+
+
 
   // ✅ Fetch user's groups
   const fetchGroups = async () => {
@@ -322,54 +374,72 @@ export default function Group() {
         </div>
       )}
       {isexpenseModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white text-black p-6 rounded w-80">
-            <h2 className="text-lg font-semibold mb-4">Group Expense</h2>
-            <input
-              type="text"
-              placeholder="Name"
-              // value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-400 rounded"
-            />
-            <input
-              type="text"
-              placeholder="Note"
-              // value={groupName}
-              // onChange={(e) => setGroupName(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-400 rounded"
-            />
-            <input
-              type="text"
-              placeholder="Type 'credit' or 'debit'"
-              // value={groupName}
-              // onChange={(e) => setGroupName(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-400 rounded"
-            />
-              <input
-              type="text"
-              placeholder="Amount"
-              // value={groupName}
-              // onChange={(e) => setGroupName(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-400 rounded"
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setIsExpenseModalOpen(false)}
-                className="px-4 py-2 bg-gray-400 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                // onClick={handleCreateGroup}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+    <div className="bg-gray-900 text-white p-6 rounded-lg w-96 shadow-2xl border border-gray-700">
+      <h2 className="text-2xl font-bold mb-4 text-center text-white">Add Group Expense</h2>
+      
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="Expense Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <textarea
+          placeholder="Note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          rows={2}
+        ></textarea>
+
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select Type</option>
+          <option value="credit">Credit</option>
+          <option value="debit">Debit</option>
+        </select>
+
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <input
+          type="text"
+          placeholder="Group ID"
+          value={group}
+          onChange={(e) => setGroup(e.target.value)}
+          className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="flex justify-end mt-6 space-x-3">
+        <button
+          onClick={() => setIsExpenseModalOpen(false)}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleAddExpense}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

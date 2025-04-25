@@ -25,7 +25,8 @@ const expenseSchema = new mongoose.Schema(
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
-      required: false, // Category is optional
+      defult: null, // Category is optional
+              
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
