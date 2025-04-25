@@ -273,6 +273,7 @@ const handleDelete = async (index) => {
               <th className="p-4">Type</th>
               <th className="p-4">Amount</th>
               <th className="p-4">Category</th>
+              <th className="p-4">Group</th>
               <th className="p-4">Edit</th>
               <th className="p-4">Delete</th>
             </tr>
@@ -286,7 +287,8 @@ const handleDelete = async (index) => {
                 <td className="p-4">{exp.note}</td>
                 <td className="p-4">{exp.type}</td>
                 <td className="p-4">{exp.amount}</td>
-                <td className="p-4">{exp.category.name}</td>
+                <td className="p-4">{exp.category?.name || 'N/A'}</td>
+                <td className="p-4">{exp.group?.name || 'N/A'}</td>
                 <td className="p-4">
                   <button
                     onClick={() => handleEdit(index)}
@@ -374,7 +376,7 @@ const handleDelete = async (index) => {
                 <option value="">Select Category</option>
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
-                    {category.name}
+                    {category.name }
                   </option>
                 ))}
               </select>
