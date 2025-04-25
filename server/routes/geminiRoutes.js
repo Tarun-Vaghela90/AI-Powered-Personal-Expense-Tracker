@@ -36,11 +36,12 @@ router.post('/geminireport', fetchuser, async (req, res) => {
 
     // Format expenses data as text for the model
     const expenseText = expenses
-      .map(
-        (expense) =>
-          `Name: ${expense.name}, Type: ${expense.type}, Amount: ${expense.amount}, Category: ${expense.category.name}, Note: ${expense.note || 'No note'}`
-      )
-      .join('\n');
+    .map(
+      (expense) =>
+        `Name: ${expense.name}, Type: ${expense.type}, Amount: ${expense.amount}, Category: ${expense.category?.name || 'Uncategorized'}, Note: ${expense.note || 'No note'}`
+    )
+    .join('\n');
+  
 
     // Start the chat session and provide the initial financial analysis prompt
     const chatSession = model.startChat({
