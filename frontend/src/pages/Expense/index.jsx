@@ -88,7 +88,7 @@ export default function Expense() {
     if (!expense.note) newErrors.note = 'Note is required';
     if (!expense.type) newErrors.type = 'Type is required';
     if (!expense.amount) newErrors.amount = 'Amount is required';
-    if (!expense.category) newErrors.category = 'Category is required';
+    // if (!expense.category) newErrors.category = 'Category is required';
     return newErrors;
   };
 
@@ -288,7 +288,7 @@ const handleDelete = async (index) => {
                 <td className="p-4">{exp.type}</td>
                 <td className="p-4">{exp.amount}</td>
                 <td className="p-4">{exp.category?.name || 'N/A'}</td>
-                <td className="p-4">{exp.group?.name || 'N/A'}</td>
+                <td className="p-4">{exp.group || 'N/A'}</td>
                 <td className="p-4">
                   <button
                     onClick={() => handleEdit(index)}
