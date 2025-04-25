@@ -92,20 +92,28 @@ export const createGroup = async (req, res) => {
       if (!group) {
         return res.status(404).json({ error: 'Group not found' });
       }
-  
-      // If owner tries to leave
-      if (group.owner.toString() === req.user.id) {
-        return res.status(403).json({ error: "Group owner can't leave the group" });
-      }
-  
+
       const memberIndex = group.members.indexOf(req.user.id);
       if (memberIndex === -1) {
         return res.status(400).json({ error: 'You are not a member of this group' });
       }
-  
+
+      // Remove the user from the group's members
       group.members.splice(memberIndex, 1);
+
+      // If the group has no members left, delete the group
+      if (group.members.length === 0) {
+        await group.deleteOne();
+        return res.json({ success: true, message: 'Group has been deleted as it has no members left' });
+      }
+
+      // If the owner leaves, assign a new owner (if there are remaining members)
+      if (group.owner.toString() === req.user.id) {
+        group.owner = group.members[0]; // Assign the first remaining member as the new owner
+      }
+
       await group.save();
-  
+
       res.json({ success: true, message: 'You left the group' });
     } catch (err) {
       console.error('Leave Group Error:', err.message);

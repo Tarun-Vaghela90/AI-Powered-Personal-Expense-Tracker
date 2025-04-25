@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import styles from "./styles.module.css";
 
 export default function Signup() {
@@ -12,6 +14,24 @@ export default function Signup() {
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Input validation
+        if (name.trim().length < 3) {
+            toast.error("Name must be at least 3 characters long.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
+
+        if (password.length < 6) {
+            toast.error("Password must be at least 6 characters long.");
+            return;
+        }
+
         try {
             const response = await fetch(`${import.meta.env.VITE_REACT_APP_URL}/api/users/register`, {
                 method: "POST",
@@ -20,26 +40,29 @@ export default function Signup() {
                 },
                 body: JSON.stringify({ name, email, password }),
             });
-    
+
             const data = await response.json();
             console.log("Signup response:", data);
-    
+
             if (!response.ok) {
                 // Safe fallback error message
                 const errorMsg =
                     data?.errors?.[0]?.msg || // validation array
                     data?.message || // single message
                     "Signup failed. Please check your input.";
-                setError(errorMsg);
+                toast.error(errorMsg); // Display error notification
                 return;
             }
-    
+
+            // Successful signup
+            toast.success("Signup successful! Redirecting to dashboard...");
             localStorage.setItem("authToken", data.authToken);
-            navigate("/dashboard/home");
-    
+            setTimeout(() => {
+                navigate("/dashboard/home");
+            }, 1500); // Delay navigation to allow toast to display
         } catch (error) {
             console.error("Error:", error);
-            setError("Something went wrong. Please try again.");
+            toast.error("Something went wrong. Please try again."); // Display error notification
         }
     };
     
@@ -49,6 +72,7 @@ export default function Signup() {
 
     return (
         <div className={styles.container}>
+            <ToastContainer /> {/* Add this line */}
             <div className={styles.form_container}>
                 <div className={styles.left}>
                     <img className={styles.img} src="./images/undraw_personal-goals_f9bb.svg" alt="signup" />
@@ -81,7 +105,6 @@ export default function Signup() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
-                        {error && <p className={styles.error}>{error}</p>}
                         <button type="submit" className={styles.btn}>Sign Up</button>
                     </form>
                     <p className={styles.text}>or</p>

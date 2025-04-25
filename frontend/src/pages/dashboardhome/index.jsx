@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
+import { useNavigate } from 'react-router-dom';
 
 export default function DashboardHome() {
   const [userData, setUserData] = useState(null);
   const [totalSum, setTotalSum] = useState({ totalCredit: 0, totalDebit: 0 });
   const [expenseData, setExpenseData] = useState([]);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Function to fetch user data and expense data
   useEffect(() => {
@@ -69,7 +71,20 @@ export default function DashboardHome() {
   }
   
   if (!userData || expenseData.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-100">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Your Dashboard!</h1>
+        <p className="text-lg text-gray-600 mb-6">
+          It looks like you haven't added any expenses yet. Start tracking your expenses to see your dashboard insights.
+        </p>
+        <button
+          onClick={() => navigate("/dashboard/expense")} // Absolute path to avoid appending
+          className="px-6 py-3 bg-indigo-500 text-white rounded-lg shadow-md hover:bg-indigo-600 transition duration-300"
+        >
+          Add Your First Expense
+        </button>
+      </div>
+    );
   }
   
 

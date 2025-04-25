@@ -43,16 +43,18 @@ export default function Login() {
         });
 
         if (responseData) {
-          // Successful login
-          toast.success("Login successful!");
-          navigate("/dashboard/home");
+          toast.success("Login successful!"); // Success notification
+          setTimeout(() => {
+            navigate("/dashboard/home");
+          }, 1000); // Delay navigation by 1 second
           localStorage.setItem("authToken", responseData.authToken);
         } else {
           toast.error("Received empty or invalid JSON response.");
         }
       } else {
         // Handle login failure
-        toast.error("Failed to log in. Check your credentials and try again.");
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to log in. Check your credentials and try again.");
       }
     } catch (error) {
       toast.error(`Error during login: ${error.message}`);
