@@ -4,7 +4,8 @@ import {
   getAllCategories,
   getCategoryById,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  
 } from '../controller/categoryController.js';
 import { fetchuser } from '../middleware/authMiddleware.js';
 
@@ -15,6 +16,7 @@ router.post('/categorycreate',fetchuser, createCategory);
 
 // Get all categories
 router.get('/allcategories',fetchuser, getAllCategories);
+
 
 // Get a single category by ID
 router.get('/category/:id',fetchuser, getCategoryById);

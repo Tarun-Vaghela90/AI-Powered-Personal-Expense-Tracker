@@ -9,14 +9,14 @@ export default function Budget() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({ label: '', budget: '' });
   const [data, setData] = useState([]);
-  const [totalExpenses, setTotalExpenses] = useState({});
+  const [totalExpensesByCategory, setTotalExpensesByCategory] = useState({}); // Changed state name
   const [editingIndex, setEditingIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
 
   const authToken = localStorage.getItem('authToken');
 
-  // Fetch categories and their associated expenses
+  // Fetch categories
   const fetchCategories = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/category/allcategories', {
@@ -28,55 +28,44 @@ export default function Budget() {
       const result = await response.json();
       if (Array.isArray(result.categories)) {
         setData(result.categories);
-        fetchTotalExpenses(result.categories);
       } else {
         console.error('API did not return an array:', result);
         setData([]);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching categories:', error);
       setErrorMessage(error.message);
     }
   };
 
-  // Fetch total expenses for each category
-  const fetchTotalExpenses = async (categories) => {
+  // Fetch total debit expenses grouped by category
+  const fetchTotalExpensesByCategoryData = async () => {
     try {
-      const expensesResults = await Promise.all(
-        categories.map(async (category) => {
-          const response = await fetch(
-            `http://localhost:3001/api/expenseRoute/expensesfetch?categoryId=${category._id}`,
-            { headers: { authToken: authToken } }
-          );
-
-          if (!response.ok) throw new Error('Failed to fetch expenses for category');
-
-          const result = await response.json();
-
-          let totalDebitExpense = 0;
-          if (result.success && Array.isArray(result.expenses)) {
-            totalDebitExpense = result.expenses
-              .filter((expense) => expense.type === 'debit')
-              .reduce((sum, expense) => sum + (expense.amount || 0), 0);
-          }
-
-          return { categoryId: category._id, total: totalDebitExpense };
-        })
-      );
-
-      const mappedExpenses = {};
-      expensesResults.forEach((item) => {
-        mappedExpenses[item.categoryId] = item.total;
+      const response = await fetch('http://localhost:3001/api/expenseRoute/personal/category', {
+        headers: { authToken: authToken },
       });
 
-      setTotalExpenses(mappedExpenses);
+      if (!response.ok) throw new Error('Failed to fetch total expenses by category');
+
+      const result = await response.json();
+      if (result.success && Array.isArray(result.expensesByCategory)) {
+        const mappedExpenses = {};
+        result.expensesByCategory.forEach((item) => {
+          mappedExpenses[item.category] = item.totalDebit; // Use category name as key
+        });
+        setTotalExpensesByCategory(mappedExpenses);
+      } else {
+        console.error('API did not return the expected total expenses by category:', result);
+        setTotalExpensesByCategory({});
+      }
     } catch (error) {
-      console.error('Error fetching expenses:', error);
+      console.error('Error fetching total expenses by category:', error);
     }
   };
 
   useEffect(() => {
     fetchCategories();
+    fetchTotalExpensesByCategoryData(); // Fetch total expenses on component mount and when categories change
   }, [authToken]);
 
   const toggleModal = () => {
@@ -140,6 +129,7 @@ export default function Budget() {
       }
 
       await fetchCategories();
+      fetchTotalExpensesByCategoryData(); // Re-fetch total expenses after updating categories
       toggleModal();
     } catch (error) {
       console.error('Error adding/updating category:', error);
@@ -162,7 +152,7 @@ export default function Budget() {
     const confirmDelete = await new Promise((resolve) => {
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50';
-  
+
       modal.innerHTML = `
         <div class="bg-gray-700 p-8 rounded-lg w-96 text-white">
           <h2 class="text-2xl mb-4">Confirm Delete</h2>
@@ -173,18 +163,18 @@ export default function Budget() {
           </div>
         </div>
       `;
-  
+
       document.body.appendChild(modal);
-  
+
       const cleanup = () => {
         document.body.removeChild(modal);
       };
-  
+
       modal.querySelector('#cancelButton').addEventListener('click', () => {
         resolve(false);
         cleanup();
       });
-  
+
       modal.querySelector('#confirmButton').addEventListener('click', () => {
         resolve(true);
         cleanup();
@@ -204,6 +194,7 @@ export default function Budget() {
       if (!response.ok) throw new Error('Failed to delete category');
 
       await fetchCategories();
+      fetchTotalExpensesByCategoryData(); // Re-fetch total expenses after deleting a category
       toggleModal();
       setEditingIndex(null); // Reset editing index after deletion
     } catch (error) {
@@ -239,10 +230,10 @@ export default function Budget() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {Array.isArray(data) && data.map((item, index) => {
           const budget = item.budget || 0;
-          const expense = totalExpenses[item._id] || 0;
+          const expense = totalExpensesByCategory[item.name] || 0; // Use category name here
           return (
             <div
-              key={item._id} // Use item._id as key, assuming it's unique
+              key={item._id}
               onClick={() => handleEditCategory(index)}
               className="p-4 rounded-lg shadow-lg bg-[#28282a] hover:shadow-2xl transition duration-300 ease-in-out flex items-center justify-between space-x-4 cursor-pointer"
             >

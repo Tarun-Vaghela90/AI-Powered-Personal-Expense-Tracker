@@ -277,3 +277,122 @@ export const getTotalSumByGroup = async (req, res) => {
     res.status(500).json({ message: 'Server error while calculating group total' });
   }
 };
+
+
+// ✅ GET PERSONAL EXPENSES GROUPED BY CATEGORY WITH TOTAL DEBIT
+export const getPersonalExpensesByCategory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const expensesByCategory = await Expense.aggregate([
+      {
+        $match: {
+          user: new mongoose.Types.ObjectId(userId),
+          group: null,
+          type: 'debit', // Only consider debit expenses
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories', // The name of the category collection
+          localField: 'category',
+          foreignField: '_id',
+          as: 'categoryDetails',
+        },
+      },
+      {
+        $unwind: {
+          path: '$categoryDetails',
+          preserveNullAndEmptyArrays: true, // Handle expenses without a category
+        },
+      },
+      {
+        $group: {
+          _id: '$categoryDetails.name', // Group by category name
+          totalDebit: { $sum: '$amount' },
+          expenses: { $push: '$$ROOT' }, // Include all expenses in the group
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: '$_id',
+          totalDebit: 1,
+          expenses: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      expensesByCategory,
+    });
+  } catch (error) {
+    console.error('Error fetching personal expenses by category:', error);
+    res.status(500).json({ message: 'Server error while fetching expenses by category' });
+  }
+};
+
+// ✅ GET GROUP EXPENSES GROUPED BY CATEGORY WITH TOTAL DEBIT
+export const getGroupExpensesByCategory = async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    const userId = req.user.id;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    const isMember = group.members.some(member => member.toString() === userId);
+    if (!isMember) {
+      return res.status(403).json({ message: 'You are not a member of this group' });
+    }
+
+    const expensesByCategory = await Expense.aggregate([
+      {
+        $match: {
+          group: new mongoose.Types.ObjectId(groupId),
+          type: 'debit', // Only consider debit expenses
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories', // The name of the category collection
+          localField: 'category',
+          foreignField: '_id',
+          as: 'categoryDetails',
+        },
+      },
+      {
+        $unwind: {
+          path: '$categoryDetails',
+          preserveNullAndEmptyArrays: true, // Handle expenses without a category
+        },
+      },
+      {
+        $group: {
+          _id: '$categoryDetails.name', // Group by category name
+          totalDebit: { $sum: '$amount' },
+          expenses: { $push: '$$ROOT' }, // Include all expenses in the group
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: '$_id',
+          totalDebit: 1,
+          expenses: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      expensesByCategory,
+    });
+  } catch (error) {
+    console.error('Error fetching group expenses by category:', error);
+    res.status(500).json({ message: 'Server error while fetching group expenses by category' });
+  }
+};
