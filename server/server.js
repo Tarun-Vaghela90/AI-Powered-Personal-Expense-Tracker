@@ -1,7 +1,4 @@
 import express, { json } from 'express';
-import session from 'express-session';
-import passport from 'passport';
-import googleRoutes from './routes/googleAuth.js';  // Assuming your auth routes are defined here
 import userAuth from './routes/userAuth.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -13,7 +10,6 @@ import groupRoute from './routes/groupRoutes.js'
 dotenv.config(); // This will load variables from a .env file
 
 const app = express();
-import './passport.js';
 app.use(express.json())
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/Ai-powered-expenses-tracker', {
@@ -25,19 +21,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/Ai-powered-expens
   console.error('MongoDB connection error:', err);
 });
 
-// Middleware for sessions
-app.use(
-    session({
-        secret: "ranger", // Your session secret key
-        resave: false, // Prevents resaving session if unmodified
-        saveUninitialized: false, // Prevents saving uninitialized sessions
-        cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24-hour session
-    })
-);
-
-app.use(passport.initialize());
-app.use(passport.session()); // This is needed to support login sessions
-
 app.use(
     cors({
         origin: "http://localhost:5173", // Frontend URL
@@ -46,7 +29,6 @@ app.use(
     })
 );
 
-app.use("/auth", googleRoutes); // Google authentication routes
 app.use("/api/users", userAuth); // User authentication and CRUD routes
 app.use("/api/expenseRoute", expenseRoutes); // Expense-related routes
 app.use("/api/category", categoryRoutes); // Category-related routes

@@ -273,7 +273,6 @@ const handleDelete = async (index) => {
               <th className="p-4">Type</th>
               <th className="p-4">Amount</th>
               <th className="p-4">Category</th>
-              <th className="p-4">Group</th>
               <th className="p-4">Edit</th>
               <th className="p-4">Delete</th>
             </tr>
@@ -288,7 +287,6 @@ const handleDelete = async (index) => {
                 <td className="p-4">{exp.type}</td>
                 <td className="p-4">{exp.amount}</td>
                 <td className="p-4">{exp.category?.name || 'N/A'}</td>
-                <td className="p-4">{exp.group || 'N/A'}</td>
                 <td className="p-4">
                   <button
                     onClick={() => handleEdit(index)}

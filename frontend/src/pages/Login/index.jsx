@@ -119,7 +119,7 @@ export default function Login() {
           </Link>
         </p>
 
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <p className="text-gray-600 text-sm">Or log in with</p>
           <button
             className="w-full mt-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
@@ -128,7 +128,7 @@ export default function Login() {
             <img src="./images/google.png" alt="google icon" className="inline-block w-5 h-5 mr-2" />
             Log In with Google
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

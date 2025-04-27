@@ -49,11 +49,11 @@ export default function Signup() {
                 const errorMsg =
                     data?.errors?.[0]?.msg || // validation array
                     data?.message || // single message
+                    data?.error || // API error message
                     "Signup failed. Please check your input.";
                 toast.error(errorMsg); // Display error notification
                 return;
             }
-
             // Successful signup
             toast.success("Signup successful! Redirecting to dashboard...");
             localStorage.setItem("authToken", data.authToken);
@@ -66,9 +66,9 @@ export default function Signup() {
         }
     };
     
-    const googleAuth = () => {
-        window.open(`${import.meta.env.VITE_REACT_APP_URL}/auth/google/callback`, "_self");
-    };
+    // const googleAuth = () => {
+    //     window.open(`${import.meta.env.VITE_REACT_APP_URL}/auth/google/callback`, "_self");
+    // };
 
     return (
         <div className={styles.container}>
@@ -108,10 +108,10 @@ export default function Signup() {
                         <button type="submit" className={styles.btn}>Sign Up</button>
                     </form>
                     <p className={styles.text}>or</p>
-                    <button className={styles.google_btn} onClick={googleAuth}>
+                    {/* <button className={styles.google_btn} onClick={googleAuth}>
                         <img src="./images/google.png" alt="googleicon" />
                         <span>Sign Up with Google</span>
-                    </button>
+                    </button> */}
                     <p className={styles.text}>
                         Already have an account? <Link to="/login">Log In</Link>
                     </p>

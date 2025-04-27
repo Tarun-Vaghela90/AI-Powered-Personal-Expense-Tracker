@@ -78,7 +78,33 @@ export default function Budget() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Update the newCategory state
     setNewCategory((prev) => ({ ...prev, [name]: value }));
+
+    // Validate inputs dynamically
+    const newErrors = { ...errors };
+    if (name === 'label') {
+      if (!value.trim()) {
+        newErrors.label = 'Category name is required';
+      } else if (value.length < 3) {
+        newErrors.label = 'Category name must be at least 3 characters long';
+      } else {
+        delete newErrors.label;
+      }
+    }
+
+    if (name === 'budget') {
+      if (!value.trim()) {
+        newErrors.budget = 'Budget is required';
+      } else if (isNaN(value) || Number(value) <= 0) {
+        newErrors.budget = 'Budget must be a positive number';
+      } else {
+        delete newErrors.budget;
+      }
+    }
+
+    setErrors(newErrors);
   };
 
   const validateForm = () => {
@@ -274,7 +300,7 @@ export default function Budget() {
                   name="label"
                   value={newCategory.label}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md p-2"
+                  className={`w-full border ${errors.label ? 'border-red-500' : 'border-gray-300'} rounded-md p-2`}
                 />
                 {errors.label && <p className="text-red-500 text-sm mt-1">{errors.label}</p>}
               </div>
@@ -286,7 +312,7 @@ export default function Budget() {
                   name="budget"
                   value={newCategory.budget}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md p-2"
+                  className={`w-full border ${errors.budget ? 'border-red-500' : 'border-gray-300'} rounded-md p-2`}
                 />
                 {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
               </div>

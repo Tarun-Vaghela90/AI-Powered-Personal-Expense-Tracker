@@ -5,7 +5,7 @@ import Category from '../model/categoryModel.js';
 export const createCategory = async (req, res) => {
   try {
     const { name, budget } = req.body;
-       console.log(name,budget)
+       
     // Validate required fields
     if (!name || budget === undefined) {
       return res.status(400).json({ message: 'Name and Budget are required fields' });
