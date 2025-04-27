@@ -7,7 +7,7 @@ import Budget from './pages/Category';
 import Expense from './pages/Expense';
 import Reports from './pages/Reports';
 import './App.css';
-import Dashboard from './pages/dashboard';
+import Dashboard from './pages/Dashboard';
 import Group from './pages/Group';
 
 function App() {
