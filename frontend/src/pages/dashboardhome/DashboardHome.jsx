@@ -3,7 +3,7 @@ import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
 import { useNavigate } from 'react-router-dom';
 
-export default function DashboardHome() {
+export default function Dashboardhome() {
   const [userData, setUserData] = useState(null);
   const [totalSum, setTotalSum] = useState({ totalCredit: 0, totalDebit: 0 });
   const [expenseData, setExpenseData] = useState([]);

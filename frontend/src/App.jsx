@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import DashboardHome from './pages/Dashboardhome/DashboardHome';
+import Dashboardhome from './pages/Dashboardhome/Dashboardhome';
 import Budget from './pages/Category';
 import Expense from './pages/Expense';
 import Reports from './pages/Reports';
@@ -40,7 +40,7 @@ function App() {
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
         >
-          <Route path="home" element={<DashboardHome />} />
+          <Route path="home" element={<Dashboardhome />} />
           <Route path="budget" element={<Budget />} />
           <Route path="expense" element={<Expense />} />
           <Route path="group" element={<Group />} />
