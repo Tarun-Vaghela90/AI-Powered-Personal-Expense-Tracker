@@ -2,12 +2,12 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import DashboardHome from './pages/Dashboardhome';
+import DashboardHome from './pages/Dashboardhome/DashboardHome';
 import Budget from './pages/Category';
 import Expense from './pages/Expense';
 import Reports from './pages/Reports';
 import './App.css';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard/Dashboard';
 import Group from './pages/Group';
 
 function App() {
