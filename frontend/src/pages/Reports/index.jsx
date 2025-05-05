@@ -6,13 +6,14 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const reportRef = useRef(); // Ref to the content we want to export
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   useEffect(() => {
     const fetchReportData = async () => {
       const authToken = localStorage.getItem('authToken');
 
       try {
-        const response = await fetch('http://localhost:3001/api/report/geminireport', {
+        const response = await fetch(`${SERVER_URL}/api/report/geminireport`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
