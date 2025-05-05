@@ -21,6 +21,7 @@ export default function Group() {
   const [editingExpense, setEditingExpense] = useState(null); // State to hold the expense being edited
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [expenseToDeleteId, setExpenseToDeleteId] = useState(null);
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   const handleAddExpense = async () => {
     const token = localStorage.getItem("authToken");
@@ -44,7 +45,7 @@ export default function Group() {
     };
 
     try {
-      const response = await fetch("http://localhost:3001/api/expenseRoute/expenseCreate", {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/expenseCreate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +96,7 @@ export default function Group() {
     };
 
     try {
-      const response = await fetch(`http://localhost:3001/api/expenseRoute/expense/${editingExpense._id}`, {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/expense/${editingExpense._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -158,7 +159,7 @@ export default function Group() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/expenseRoute/expense/${expenseToDeleteId}`, {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/expense/${expenseToDeleteId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -185,7 +186,7 @@ export default function Group() {
   // ✅ Fetch user's groups
   const fetchGroups = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/group/my-groups", {
+      const response = await fetch(`${SERVER_URL}/api/group/my-groups`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -208,7 +209,7 @@ export default function Group() {
   // ✅ Fetch group details
   const fetchGroupDetails = async (groupId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/group/info/${groupId}`, {
+      const response = await fetch(`${SERVER_URL}/api/group/info/${groupId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -233,7 +234,7 @@ export default function Group() {
   // ✅ Fetch group expenses for selected group
   const fetchGroupExpenses = async (groupId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/expenseRoute/groupExpenses/${groupId}`, {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/groupExpenses/${groupId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -261,7 +262,7 @@ export default function Group() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/api/group/create", {
+      const response = await fetch(`${SERVER_URL}/api/group/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -288,7 +289,7 @@ export default function Group() {
     if (!window.confirm("Are you sure you want to leave this group?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/group/leave/${groupId}`, {
+      const response = await fetch(`${SERVER_URL}/api/group/leave/${groupId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -317,7 +318,7 @@ export default function Group() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/group/join/${joinCode}`, {
+      const response = await fetch(`${SERVER_URL}/api/group/join/${joinCode}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
