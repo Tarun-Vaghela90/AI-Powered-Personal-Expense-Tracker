@@ -2,7 +2,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboardhome from './pages/DDashboardhome/Dashboardhome';
+import Dashboardhome from './pages/Dashboardhome/Dashboardhome';
 
 import Budget from './pages/Category';
 import Expense from './pages/Expense';
