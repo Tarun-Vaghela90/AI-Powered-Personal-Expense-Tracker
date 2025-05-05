@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/Ai-powered-expens
 
 app.use(
     cors({
-        origin: "http://localhost:5173", // Frontend URL
+        origin: process.env.FRONTEND_URL||"http://localhost:5173", // Frontend URL
         methods: "GET,POST,PUT,DELETE",
         credentials: true
     })
