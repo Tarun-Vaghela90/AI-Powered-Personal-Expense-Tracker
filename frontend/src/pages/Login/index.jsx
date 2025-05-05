@@ -7,6 +7,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,7 +29,7 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_URL}/api/users/login`, {
+      const response = await fetch(`${SERVER_URL}/api/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

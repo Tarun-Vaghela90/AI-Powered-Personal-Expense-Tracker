@@ -10,6 +10,7 @@ export default function Signup() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -33,7 +34,7 @@ export default function Signup() {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_REACT_APP_URL}/api/users/register`, {
+            const response = await fetch(`${SERVER_URL}/api/users/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
