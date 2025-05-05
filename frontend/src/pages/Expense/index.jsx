@@ -8,6 +8,7 @@ export default function Expense() {
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   // Fetch expenses when the component mounts
   const fetchExpenses = async () => {
@@ -18,7 +19,7 @@ export default function Expense() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/api/expenseRoute/expensesfetch', {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/expensesfetch`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ export default function Expense() {
           return;
         }
   
-        response = await fetch(`http://localhost:3001/api/expenseRoute/expense/${expense._id}`, {
+        response = await fetch(`${SERVER_URL}/api/expenseRoute/expense/${expense._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export default function Expense() {
         }
       } else {
         // If creating a new expense
-        response = await fetch('http://localhost:3001/api/expenseRoute/expenseCreate', {
+        response = await fetch(`${SERVER_URL}/api/expenseRoute/expenseCreate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -226,7 +227,7 @@ const handleDelete = async (index) => {
   }
   try {
     // Send DELETE request to the server to remove the expense
-    const response = await fetch(`http://localhost:3001/api/expenseRoute/expense/${expenseId}`, {
+    const response = await fetch(`${SERVER_URL}/api/expenseRoute/expense/${expenseId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

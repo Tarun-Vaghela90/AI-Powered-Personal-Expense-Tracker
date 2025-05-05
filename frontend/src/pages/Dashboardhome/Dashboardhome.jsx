@@ -10,14 +10,14 @@ export default function Dashboardhome() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
   // Function to fetch user data and expense data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const authToken = localStorage.getItem('authToken');
-
         // Fetch user data
-        const userResponse = await fetch('http://localhost:3001/api/users/getuser', {
+        const userResponse = await fetch( `${SERVER_URL}/api/users/getuser`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export default function Dashboardhome() {
 
         // Fetch total credit and debit sum
         const totalResponse = await fetch(
-          `http://localhost:3001/api/expenseRoute/expenseTotal/${userData._id}`,
+          `${SERVER_URL}/api/expenseRoute/expenseTotal/${userData._id}`,
           {
             method: 'GET',
             headers: {
@@ -48,7 +48,7 @@ export default function Dashboardhome() {
         setTotalSum(totalData);
 
         // Fetch expense data
-        const expenseResponse = await fetch('http://localhost:3001/api/expenseRoute/expensesfetch', {
+        const expenseResponse = await fetch(`${SERVER_URL}/api/expenseRoute/expensesfetch`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

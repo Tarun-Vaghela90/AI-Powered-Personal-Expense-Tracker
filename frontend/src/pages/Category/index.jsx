@@ -13,13 +13,14 @@ export default function Budget() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   const authToken = localStorage.getItem('authToken');
 
   // Fetch categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/category/allcategories', {
+      const response = await fetch(`${SERVER_URL}/api/category/allcategories`, {
         headers: { authToken: authToken },
       });
 
@@ -41,7 +42,7 @@ export default function Budget() {
   // Fetch total debit expenses grouped by category
   const fetchTotalExpensesByCategoryData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/expenseRoute/personal/category', {
+      const response = await fetch(`${SERVER_URL}/api/expenseRoute/personal/category`, {
         headers: { authToken: authToken },
       });
 
@@ -131,7 +132,7 @@ export default function Budget() {
 
       if (editingIndex !== null) {
         const categoryId = data[editingIndex]._id;
-        response = await fetch(`http://localhost:3001/api/category/category/${categoryId}`, {
+        response = await fetch(`${SERVER_URL}/api/category/category/${categoryId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -142,7 +143,7 @@ export default function Budget() {
 
         if (!response.ok) throw new Error('Failed to update category');
       } else {
-        response = await fetch('http://localhost:3001/api/category/categorycreate', {
+        response = await fetch(`${SERVER_URL}/api/category/categorycreate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -212,7 +213,7 @@ export default function Budget() {
     const categoryId = data[editingIndex]._id;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/category/category/${categoryId}`, {
+      const response = await fetch(`${SERVER_URL}/api/category/category/${categoryId}`, {
         method: 'DELETE',
         headers: { authToken: authToken },
       });

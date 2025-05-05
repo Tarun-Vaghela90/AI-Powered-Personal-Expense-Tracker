@@ -10,13 +10,14 @@ export default function Dashboard() {
   const [error, setError] = useState(null); // To store any errors
   const authToken = localStorage.getItem('authToken'); // Get token from localStorage
   const navigate = useNavigate(); // useNavigate for redirection
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   // Fetch user data from backend
   useEffect(() => {
     if (authToken) {
       axios
         .post(
-          'http://localhost:3001/api/users/getuser',
+          `${SERVER_URL}/api/users/getuser`,
           {},
           {
             headers: {
